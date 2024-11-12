@@ -61,7 +61,7 @@ function fetchPage($url, $cookie) {
 
     return $response;
 }
-
+getTokenBalance($cookie);
 // Hàm để thực hiện nhiệm vụ
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
@@ -219,7 +219,7 @@ function performTasks($cookie) {
         return false; // Không có nhiệm vụ
     }
 }
-getTokenBalance($cookie);
+
 // Vòng lặp chính để thực hiện nhiệm vụ
 do {
     // Thực hiện nhiệm vụ vòng 1
