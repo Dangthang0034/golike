@@ -80,7 +80,7 @@ function getCsrfToken($cookie, $url) {
         return null;
     }
 }
-
+ getTokenBalance($cookie);
 // Hàm để thực hiện nhiệm vụ
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
@@ -144,7 +144,7 @@ function performTask($cookie) {
             getTokenBalance($cookie);
 
             // Làm mới trang sau khi hoàn thành nhiệm vụ
-            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\n";
+            
             sleep(2); // Đợi một chút trước khi tải lại trang
 
             return true; // Nhiệm vụ đã hoàn thành
@@ -221,7 +221,7 @@ function performTasks($cookie) {
             getTokenBalance($cookie);
 
             // Làm mới trang sau khi hoàn thành nhiệm vụ
-            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\n";
+            
             sleep(2); // Đợi một chút trước khi tải lại trang
 
             return true; // Nhiệm vụ đã hoàn thành
