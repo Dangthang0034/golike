@@ -205,6 +205,10 @@ function performTasks($cookie) {
             // Kiểm tra lại số dư token sau khi hoàn thành nhiệm vụ
             getTokenBalance($cookie);
 
+            // Làm mới trang sau khi hoàn thành nhiệm vụ
+            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\n";
+            sleep(2); // Đợi một chút trước khi tải lại trang
+
             return true; // Nhiệm vụ đã hoàn thành
         } else {
             echo "Không tìm thấy link làm nhiệm vụ \r";
@@ -227,6 +231,9 @@ do {
     if (!performTasks($cookie)) {
         break; // Nếu không có nhiệm vụ, thoát khỏi vòng lặp
     }
+
+    // Kiểm tra lại số dư token sau mỗi nhiệm vụ
+    getTokenBalance($cookie);
 
 } while (true);
 
