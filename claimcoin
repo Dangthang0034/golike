@@ -66,7 +66,7 @@ function fetchPage($url, $cookie) {
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
-
+    sleep(2);
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -145,7 +145,7 @@ function performTask($cookie) {
 function performTasks($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
-
+    sleep(2);
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -219,7 +219,7 @@ function performTasks($cookie) {
         return false; // Không có nhiệm vụ
     }
 }
-
+getTokenBalance($cookie);
 // Vòng lặp chính để thực hiện nhiệm vụ
 do {
     // Thực hiện nhiệm vụ vòng 1
