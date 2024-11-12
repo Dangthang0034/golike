@@ -83,46 +83,9 @@ function performTask($cookie) {
         $response = fetchPage($urll, $cookie);
 
         // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
-        if ($timeNode) {
-            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-            $time = isset($matches[1]) ? $matches[1] : null;
-        }
+        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(r";
+            sleep(2); // Đợi một chút trước khi tải lại trang
 
-        if ($urll && $time) {
-            for ($t = $time; $t > 0; $t--) {
-                echo "Làm nhiệm vụ trong $t giây...\r";
-                sleep(1);
-            }
-
-            // Thực hiện bước xác nhận
-            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
-            if ($csrfNode) {
-                $csrf_token = $csrfNode->getAttribute('value');
-            } else {
-                echo "Không tìm thấy csrf_token_name.\n";
-                return false; // Không thể hoàn thành nhiệm vụ
-            }
-
-            $postData = ['csrf_token_name' => $csrf_token];
-            $sv = basename($urll);
-            $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $urlPost);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-            $response = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                echo 'Error: ' . curl_error($ch);
-                exit;
-            }
-            curl_close($ch);
-
-            echo "Đã hoàn thành nhiệm vụ.\r";
             return true; // Nhiệm vụ đã hoàn thành
         } else {
             echo "Không tìm thấy link làm nhiệm vụ \r";
@@ -152,49 +115,9 @@ function performTasks($cookie) {
         $urll = isset($urlMatches[1]) ? $urlMatches[1] : null;
 
         // Thực hiện nhiệm vụ
-        $response = fetchPage($urll, $cookie);
+        $response = fetchPager";
+            sleep(2); // Đợi một chút trước khi tải lại trang
 
-        // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
-        if ($timeNode) {
-            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-            $time = isset($matches[1]) ? $matches[1] : null;
-        }
-
-        if ($urll && $time) {
-            for ($t = $time; $t > 0; $t--) {
-                echo "Làm nhiệm vụ trong $t giây...\r";
-                sleep(1);
-            }
-
-            // Thực hiện bước xác nhận
-            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
-            if ($csrfNode) {
-                $csrf_token = $csrfNode->getAttribute('value');
-            } else {
-                echo "Không tìm thấy csrf_token_name.\n";
-                return false; // Không thể hoàn thành nhiệm vụ
-            }
-
-            $postData = ['csrf_token_name' => $csrf_token];
-            $sv = basename($urll);
-            $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $urlPost);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-            $response = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                echo 'Error: ' . curl_error($ch);
-                exit;
-            }
-            curl_close($ch);
-
-            echo "Đã hoàn thành nhiệm vụ.\r";
             return true; // Nhiệm vụ đã hoàn thành
         } else {
             echo "Không tìm thấy link làm nhiệm vụ \r";
@@ -206,50 +129,24 @@ function performTasks($cookie) {
     }
 }
 
-// Vòng lặp chính
-while(true) {
-    // Kiểm tra lại số dư token sau mỗi lần hoàn thành nhiệm vụ
-    getTokenBalance($cookie);
-
-    // Lặp qua các vòng nhiệm vụ
-    do {
-        $tasksCompleted = 0;
-
-        // Thực hiện các nhiệm vụ vòng đầu tiên
-        while (performTask($cookie)) {
-            // Tăng số nhiệm vụ đã hoàn thành
-            $tasksCompleted++;
-            // Kiểm tra lại số dư token sau mỗi nhiệm vụ
-            getTokenBalance($cookie);
-        }
-
-        // Nếu không có nhiệm vụ nào trong vòng đầu, chuyển sang vòng 2
-        if ($tasksCompleted == 0) {
-            echo "Không còn nhiệm vụ nào trong vòng đầu tiên.\n";
-            break;
-        }
-
-        // Tiến hành các nhiệm vụ vòng 2
-        while (performTasks($cookie)) {
-            // Tăng số nhiệm vụ đã hoàn thành
-            $tasksCompleted++;
-            // Kiểm tra lại số dư token sau mỗi nhiệm vụ
-            getTokenBalance($cookie);
-        }
-
-        // Nếu không có nhiệm vụ nào trong vòng 2, chuyển sang nghỉ 30 phút
-        if ($tasksCompleted == 0) {
-            echo "Không còn nhiệm vụ nào trong vòng 2.\n";
-            break;
-        }
-
-    } while (true);
-
-    // Chờ 30 phút trước khi tìm lại nhiệm vụ mới
-    echo "Đã hoàn thành tất cả nhiệm vụ, chờ 30 phút trước khi thử lại.\n";
-    for ($delay = 1800; $delay > 0; $delay--) {
-        echo "Chờ $delay giây...\r";
-        sleep(1);
+// Vòng lặp chính để thực hiện nhiệm vụ
+do {
+    // Thực hiện nhiệm vụ vòng 1
+    if (!performTask($cookie)) {
+        break; // Nếu không có nhiệm vụ, thoát khỏi vòng lặp
     }
+
+    // Thực hiện nhiệm vụ vòng 2 nếu có
+    if (!performTasks($cookie)) {
+        break; // Nếu không có nhiệm vụ, thoát khỏi vòng lặp
+    }
+
+} while (true);
+
+// Sau khi hết nhiệm vụ, chờ 30 phút (1800 giây) trước khi tìm lại nhiệm vụ
+echo "Đã hoàn thành tất cả nhiệm vụ, chờ 30 phút trước khi thử lại.\n";
+for ($delay = 1800; $delay > 0; $delay--) {
+    echo "Chờ $delay giây...\r";
+    sleep(1);
 }
 ?>
