@@ -177,7 +177,7 @@ do {
     }
 
     // Thực hiện nhiệm vụ vòng 2 nếu có
-    if (!performTasks($cookie)) {
+    if (!performTasks($cookie) {
         break; // Nếu không có nhiệm vụ, thoát khỏi vòng lặp
     }
 
