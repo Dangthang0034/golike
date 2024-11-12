@@ -163,80 +163,90 @@ function performTasks($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
     sleep(2);
+
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
     $xpath = new DOMXPath($doc);
 
-    // Tìm phần tử chứa thông tin nhiệm vụ
-    $buttonNode = $xpath->query('//button[contains(@class, "tab-pane fade show active")]')->item(0);
-    if ($buttonNode) {
-        $urll = $buttonNode->getAttribute('onclick');
-        preg_match("/location.href='(.*?)'/", $urll, $urlMatches);
-        $urll = isset($urlMatches[1]) ? $urlMatches[1] : null;
+    // Tìm tất cả các button có class 'btn btn-success btn-block'
+    $buttonNodes = $xpath->query('//button[contains(@class, "btn btn-success btn-block")]');
 
-        // Thực hiện nhiệm vụ
-        $response = fetchPage($urll, $cookie);
+    if ($buttonNodes->length > 0) {
+        // Lặp qua các button để lấy link
+        foreach ($buttonNodes as $buttonNode) {
+            $onclick = $buttonNode->getAttribute('onclick');
+            preg_match("/location.href='(.*?)'/", $onclick, $urlMatches);
 
-        // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
-        
-        // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
-        $time = null;
-        if ($timeNode) {
-            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-            $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
-        }
-        // Lấy CSRF token tại đây
-            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
-            if ($csrf_token === null) {
-                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
+            if (isset($urlMatches[1])) {
+                $taskUrl = $urlMatches[1];
+
+                // Thực hiện nhiệm vụ
+                echo "Đang thực hiện nhiệm vụ với URL: $taskUrl\n";
+
+                // Gửi yêu cầu đến URL nhiệm vụ
+                $response = fetchPage($taskUrl, $cookie);
+                
+                // Chờ đợi và làm nhiệm vụ
+                $timeNode = $xpath->query('//span[@class="badge span-warning text-danger"]')->item(0);
+
+                // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
+                $time = null;
+                if ($timeNode) {
+                    preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
+                    $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
+                }
+
+                if ($taskUrl && $time) {
+                    for ($t = $time; $t > 0; $t--) {
+                        echo "Làm nhiệm vụ trong $t giây...\r";
+                        sleep(1);
+                    }
+
+                    // Gửi yêu cầu xác nhận nhiệm vụ
+                    $csrf_token = getCsrfToken($cookie, $taskUrl); // Lấy CSRF token từ URL nhiệm vụ
+                    if ($csrf_token === null) {
+                        echo "Không thể lấy CSRF token.\n";
+                        return false;
+                    }
+
+                    $postData = ['csrf_token_name' => $csrf_token];
+                    $sv = basename($taskUrl);
+                    $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $urlPost);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+                    $response = curl_exec($ch);
+
+                    if (curl_errno($ch)) {
+                        echo 'Error: ' . curl_error($ch);
+                        exit;
+                    }
+                    curl_close($ch);
+
+                    echo "Đã hoàn thành nhiệm vụ.\n";
+                    // Kiểm tra lại số dư token sau khi hoàn thành nhiệm vụ
+                    getTokenBalance($cookie);
+
+                    // Làm mới trang sau khi hoàn thành nhiệm vụ
+                    sleep(2); // Đợi một chút trước khi tải lại trang
+                    return true; // Nhiệm vụ đã hoàn thành
+                } else {
+                    echo "Không tìm thấy link làm nhiệm vụ \n";
+                    return false; // Không có nhiệm vụ
+                }
             }
-        if ($urll && $time) {
-            for ($t = $time; $t > 0; $t--) {
-                echo "Làm nhiệm vụ trong $t giây...\r";
-                sleep(1);
-            }
-
-            
-
-            // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
-            $postData = ['csrf_token_name' => $csrf_token];  // Tên CSRF token và giá trị cần thay đổi theo thực tế
-            $sv = basename($urll);
-            $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
-
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $urlPost);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
-            $response = curl_exec($ch);
-
-            if (curl_errno($ch)) {
-                echo 'Error: ' . curl_error($ch);
-                exit;
-            }
-            curl_close($ch);
-
-            echo "Đã hoàn thành nhiệm vụ.\r";
-            // Kiểm tra lại số dư token sau khi hoàn thành nhiệm vụ
-            getTokenBalance($cookie);
-
-            // Làm mới trang sau khi hoàn thành nhiệm vụ
-            
-            sleep(2); // Đợi một chút trước khi tải lại trang
-
-            return true; // Nhiệm vụ đã hoàn thành
-        } else {
-            echo "Không tìm thấy link làm nhiệm vụ \r";
-            return false; // Không có nhiệm vụ
         }
     } else {
         echo "Không có nhiệm vụ nào.\r";
         return false; // Không có nhiệm vụ
     }
 }
+
 getTokenBalance($cookie);
 echo"lam nv \n";
 // Vòng lặp chính để thực hiện nhiệm vụ
