@@ -83,14 +83,58 @@ function performTask($cookie) {
         $response = fetchPage($urll, $cookie);
 
         // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(r";
+        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
+        if ($timeNode) {
+            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
+            $time = isset($matches[1]) ? $matches[1] : null;
+        }
+
+        if ($urll && $time) {
+            for ($t = $time; $t > 0; $t--) {
+                echo "Làm nhiệm vụ trong $t giây...\r";
+                sleep(1);
+            }
+
+            // Thực hiện bước xác nhận
+            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
+            if ($csrfNode) {
+                $csrf_token = $csrfNode->getAttribute('value');
+            } else {
+                echo "Không tìm thấy csrf_token_name.\n";
+                return false; // Không thể hoàn thành nhiệm vụ
+            }
+
+            $postData = ['csrf_token_name' => $csrf_token];
+            $sv = basename($urll);
+            $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $urlPost);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            $response = curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                echo 'Error: ' . curl_error($ch);
+                exit;
+            }
+            curl_close($ch);
+
+            echo "Đã hoàn thành nhiệm vụ.\r";
+            // Kiểm tra lại số dư token sau khi hoàn thành nhiệm vụ
+            getTokenBalance($cookie);
+
+            // Làm mới trang sau khi hoàn thành nhiệm vụ
+            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\n";
             sleep(2); // Đợi một chút trước khi tải lại trang
 
             return true; // Nhiệm vụ đã hoàn thành
         } else {
             echo "Không tìm thấy link làm nhiệm vụ \r";
             return false; // Không có nhiệm vụ
-        
+        }
     } else {
         echo "Không có nhiệm vụ nào.\r";
         return false; // Không có nhiệm vụ
@@ -115,8 +159,51 @@ function performTasks($cookie) {
         $urll = isset($urlMatches[1]) ? $urlMatches[1] : null;
 
         // Thực hiện nhiệm vụ
-        $response = fetchPager";
-            sleep(2); // Đợi một chút trước khi tải lại trang
+        $response = fetchPage($urll, $cookie);
+
+        // Chờ đợi và làm nhiệm vụ
+        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
+        if ($timeNode) {
+            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
+            $time = isset($matches[1]) ? $matches[1] : null;
+        }
+
+        if ($urll && $time) {
+            for ($t = $time; $t > 0; $t--) {
+                echo "Làm nhiệm vụ trong $t giây...\r";
+                sleep(1);
+            }
+
+            // Thực hiện bước xác nhận
+            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
+            if ($csrfNode) {
+                $csrf_token = $csrfNode->getAttribute('value');
+            } else {
+                echo "Không tìm thấy csrf_token_name.\n";
+                return false; // Không thể hoàn thành nhiệm vụ
+            }
+
+            $postData = ['csrf_token_name' => $csrf_token];
+            $sv = basename($urll);
+            $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $urlPost);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+            $response = curl_exec($ch);
+
+            if (curl_errno($ch)) {
+                echo 'Error: ' . curl_error($ch);
+                exit;
+            }
+            curl_close($ch);
+
+            echo "Đã hoàn thành nhiệm vụ.\r";
+            // Kiểm tra lại số dư token sau khi hoàn thành nhiệm vụ
+            getTokenBalance($cookie);
 
             return true; // Nhiệm vụ đã hoàn thành
         } else {
