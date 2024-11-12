@@ -155,10 +155,7 @@ function performTask($cookie) {
             echo "Không tìm thấy link làm nhiệm vụ \r";
             return false; // Không có nhiệm vụ
         }
-    } else {
-        echo "Không có nhiệm vụ nào.\r";
-        return false; // Không có nhiệm vụ
-    }
+    } 
 }
 
 // Hàm thực hiện vòng 2 các nhiệm vụ
