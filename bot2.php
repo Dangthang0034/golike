@@ -188,14 +188,16 @@ function performTasks($cookie) {
                 $response = fetchPage($taskUrl, $cookie);
                 
                 // Chờ đợi và làm nhiệm vụ
-                $timeNode = $xpath->query('//*[@id="iframe"]/div/div[1]/div/div/div[2]/div/span[2]/i')->item(0);
+                $timeNode = $xpath->query('//*[@id="iframe"]/div/div[1]/div/div/div[2]/div/span[2]/i');
 
-                // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
-                $time = null;
-                if ($timeNode) {
-                    preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-                    $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
-                }
+if ($timeNode->length > 0) {
+    $timeNode = $timeNode->item(0);
+    // Tiếp tục xử lý với $timeNode
+} else {
+    echo "Không tìm thấy thời gian.\n";
+    $timeNode = null;
+}
+
 
                 if ($taskUrl && $time) {
                     for ($t = $time; $t > 0; $t--) {
