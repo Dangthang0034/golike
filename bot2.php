@@ -188,8 +188,7 @@ function performTasks($cookie) {
                 $response = fetchPage($taskUrl, $cookie);
                 
                 // Chờ đợi và làm nhiệm vụ
-                $timeNode = $xpath->query('/html/body/div[1]/div[2]/div/div/div[4]/div/div[2]/div[2]/div/div[1]/div/div/div[2]/div/span[2]
-    ')->item(0);
+                $timeNode = $xpath->query('/html/body/div[1]/div[2]/div/div/div[4]/div/div[2]/div[2]/div/div[1]/div/div/div[2]/div/span[2]')->item(0);
 
                 // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
                 $time = null;
