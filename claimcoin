@@ -238,7 +238,7 @@ function performTasks($cookie) {
     }
 }
 getTokenBalance($cookie);
-
+echo"lam nv \n";
 // Vòng lặp chính để thực hiện nhiệm vụ
 do {
     // Thực hiện nhiệm vụ vòng 1
