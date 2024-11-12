@@ -25,6 +25,7 @@ while(true) {
         }
     }
 
+    // Xóa màn hình
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, "https://claimcoin.in/ptc");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -49,28 +50,59 @@ while(true) {
         // Kiểm tra và hiển thị token
         getTokenBalance($cookie);
 
-        // Thực hiện nhiệm vụ chính
+        // Lặp lại cho đến khi không còn nhiệm vụ
         do {
-            $taskCompleted = performTask($cookie);
-            if ($taskCompleted) {
-                // Nếu đã hoàn thành nhiệm vụ, kiểm tra lại trạng thái token
-                getTokenBalance($cookie);
-            } else {
-                // Nếu không còn nhiệm vụ, dừng vòng lặp
-                echo "Không còn nhiệm vụ nào. Dừng lại.\n";
-                break;
-            }
-        } while (true);
+            $tasksCompleted = 0;
 
-        // Nếu không còn nhiệm vụ, chờ một khoảng thời gian và thử lại
-        echo "Không còn nhiệm vụ, tìm lại nhiệm vụ sau 30 phút...\n";
-        for ($delay = 1800; $delay > 0; $delay--) {
-            echo "Hết nhiệm vụ, tìm lại nhiệm vụ sau $delay giây \r";
-            sleep(1);
-        }
+            // Thực hiện các nhiệm vụ liên tiếp cho đến khi không còn nhiệm vụ nào
+            while (performTask($cookie)) {
+                // Tăng số nhiệm vụ đã hoàn thành
+                $tasksCompleted++;
+                // Kiểm tra lại số dư token sau mỗi nhiệm vụ
+                getTokenBalance($cookie);
+            }
+
+            // Nếu không còn nhiệm vụ nào, thông báo và chuyển sang vòng lặp nhiệm vụ tiếp theo
+            if ($tasksCompleted == 0) {
+                echo "Không còn nhiệm vụ nào, tìm lại nhiệm vụ ngay bây giờ...\n";
+                continue; // Quay lại vòng lặp nhiệm vụ tiếp theo mà không cần chờ
+            }
+
+        } while ($tasksCompleted > 0); // Chạy tiếp nếu có nhiệm vụ nào mới sau khi chờ
+
+        // Vòng nhiệm vụ thứ 2
+        $tasksCompleted2 = 0;
+        do {
+            $tasksCompleted2 = 0;
+
+            // Thực hiện các nhiệm vụ vòng thứ 2
+            while (performTasks($cookie)) {
+                $tasksCompleted2++;
+                // Kiểm tra lại số dư token sau mỗi nhiệm vụ
+                getTokenBalance($cookie);
+            }
+
+            // Nếu không còn nhiệm vụ nào trong vòng thứ 2
+            if ($tasksCompleted2 == 0) {
+                echo "Không còn nhiệm vụ nào trong vòng 2, tìm lại nhiệm vụ sau 30 phút...\n";
+                // Sau khi hết vòng 2, chờ 30 phút trước khi quay lại vòng chính
+                break; // Thoát khỏi vòng nhiệm vụ thứ 2 để chờ 30 phút
+            }
+
+        } while ($tasksCompleted2 > 0); // Tiếp tục nếu có nhiệm vụ trong vòng 2
+
     }
 
     curl_close($ch);
+
+    // Chờ 30 phút (1800 giây) trước khi tìm lại nhiệm vụ từ đầu
+    echo "Chờ 30 phút trước khi tìm lại nhiệm vụ...\n";
+    for ($delay = 1800; $delay > 0; $delay--) {
+        echo "Chờ $delay giây...\r";
+        sleep(1); // Delay 1 giây
+    }
+
+    // Sau khi chờ 30 phút, chương trình sẽ quay lại vòng lặp chính
 }
 
 function fetchPage($url, $cookie) {
@@ -172,7 +204,7 @@ function performTask($cookie) {
             return true; // Nhiệm vụ đã hoàn thành
         } else {
             echo "Không tìm thấy link làm nhiệm vụ \r";
-            return false;
+            return false; // Không có nhiệm vụ
         }
     } else {
         echo "Không có nhiệm vụ nào.\r";
