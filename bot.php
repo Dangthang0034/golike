@@ -116,10 +116,8 @@ $nhantien=json_decode(plike($u4,$tsm,$danhan),true);$ketqua=$nhantien['status'];
 if($ketqua==200){
 	$poi=$nhantien['data']['prices'];$poii=$poi+$poiii;$tg=date("G:i:s", time());mothai();
 	echo"$re $stt | $tg |$y $type |  $vava  |$gr $poi |$poii \n";$sp=$stt+1;$stt=$sp;
-		for($k = 3;$k>0;$k--){
-			echo "delay tìm Job $k \r";sleep(1);}
 	}else{baoloi();continue;}
-}
+	}else{baoloi();continue;}
 }
 if($type=="follow"){
 	$flo=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
@@ -140,10 +138,10 @@ while($ll<$mlen){$ll++;
 	$nhantien=json_decode(plike($u4,$tsm,$danhan),true);$ketqua=$nhantien['status'];
 	if($ketqua==200){$poi=$nhantien['data']['prices'];$poii=$poi+$poiii;$tg=date("G:i:s", time());mothai();
 	echo"$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";$sp=$stt+1;$stt=$sp;
-	for($k = 3;$k>0;$k--){
-		echo "delay tìm Job $k \r";sleep(1);}
-	break;}}
+	continue;}}
 }
+	    for($k = 3;$k>0;$k--){
+		echo "delay tìm Job $k \r";sleep(1);}
 $poiii=$poii;
 
 }
