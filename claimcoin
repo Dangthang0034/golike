@@ -187,18 +187,18 @@ function performTasks($cookie) {
             preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
             $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
         }
-
+        // Lấy CSRF token tại đây
+            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
+            if ($csrf_token === null) {
+                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
+            }
         if ($urll && $time) {
             for ($t = $time; $t > 0; $t--) {
                 echo "Làm nhiệm vụ trong $t giây...\r";
                 sleep(1);
             }
 
-            // Lấy CSRF token tại đây
-            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
-            if ($csrf_token === null) {
-                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
-            }
+            
 
             // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
             $postData = ['csrf_token_name' => $csrf_token];  // Tên CSRF token và giá trị cần thay đổi theo thực tế
