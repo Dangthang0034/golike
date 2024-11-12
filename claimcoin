@@ -72,7 +72,7 @@ function getCsrfToken($cookie, $url) {
     $xpath = new DOMXPath($doc);
 
     // Tìm phần tử chứa CSRF token
-    $csrfNode = $xpath->query('//input[contains(@name, "csrf")]')->item(0);  // Thay "csrf" bằng tên thực tế
+    $csrfNode = $xpath->query('//input[contains(@name, "csrf_token_name")]')->item(0);  // Thay "csrf" bằng tên thực tế
     if ($csrfNode) {
         return $csrfNode->getAttribute('value');
     } else {
