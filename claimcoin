@@ -147,7 +147,7 @@ function performTask($cookie) {
             getTokenBalance($cookie);
 
             // Làm mới trang sau khi hoàn thành nhiệm vụ
-            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\r";
+           
             sleep(2); // Đợi một chút trước khi tải lại trang
 
             return true; // Nhiệm vụ đã hoàn thành
@@ -224,7 +224,7 @@ function performTasks($cookie) {
             getTokenBalance($cookie);
 
             // Làm mới trang sau khi hoàn thành nhiệm vụ
-            echo "Đang làm mới trang và tìm nhiệm vụ tiếp theo...\r";
+            
             sleep(2); // Đợi một chút trước khi tải lại trang
 
             return true; // Nhiệm vụ đã hoàn thành
