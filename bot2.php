@@ -81,7 +81,7 @@ function getCsrfToken($cookie, $url) {
     }
 }
 
-// Hàm để thực hiện nhiệm vụ
+// Hàm để thực hiện nhiệm vụ (vòng 1)
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
@@ -162,7 +162,7 @@ function performTask($cookie) {
     }
 }
 
-// Hàm thực hiện vòng 2 các nhiệm vụ
+// Hàm thực hiện nhiệm vụ (vòng 2) với XPath mới cho timeNode và button
 function performTasks($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
@@ -173,8 +173,8 @@ function performTasks($cookie) {
     @$doc->loadHTML($response);
     $xpath = new DOMXPath($doc);
 
-    // Tìm phần tử chứa thông tin nhiệm vụ
-    $buttonNode = $xpath->query('//button[contains(@class, "tab-pane fade show active")]')->item(0);
+    // Tìm phần tử chứa thông tin nhiệm vụ ở vòng 2
+    $buttonNode = $xpath->query('//*[@id="iframe"]/div/div[2]/div/div/button')->item(0); // XPath mới cho button
     if ($buttonNode) {
         $urll = $buttonNode->getAttribute('onclick');
         preg_match("/location.href='(.*?)'/", $urll, $urlMatches);
@@ -190,7 +190,7 @@ function performTasks($cookie) {
         }
 
         // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
+        $timeNode = $xpath->query('//*[@id="iframe"]/div/div[2]/div/div/span[@class="badge span-danger text-danger"]')->item(0); // XPath mới cho timeNode
         
         // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
         $time = null;
@@ -243,6 +243,7 @@ function performTasks($cookie) {
     }
 }
 
+// Bắt đầu quá trình làm nhiệm vụ
 getTokenBalance($cookie);
 echo "Bắt đầu làm nhiệm vụ...\n";
 
@@ -266,3 +267,4 @@ for ($delay = 1800; $delay > 0; $delay--) {
     echo "Chờ $delay giây...\r";
     sleep(1);
 }
+?>
