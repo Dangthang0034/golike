@@ -169,7 +169,7 @@ function performTasks($cookie) {
     $xpath = new DOMXPath($doc);
 
     // Tìm phần tử chứa thông tin nhiệm vụ
-    $buttonNode = $xpath->query('//button[contains(@class, "btn-success btn-block")]')->item(0);
+    $buttonNode = $xpath->query('//button[contains(@class, "tab-pane fade show active")]')->item(0);
     if ($buttonNode) {
         $urll = $buttonNode->getAttribute('onclick');
         preg_match("/location.href='(.*?)'/", $urll, $urlMatches);
