@@ -42,7 +42,7 @@ $tho2=explode("\n",file_get_contents('autho.txt'));
 $tho1=$tho2[0];
 $autho=explode('|',$tho1)[0];
 $t=explode('|',$tho1)[1];
-if($autho==false){nhapautho();}else{}
+if($autho==false){clear();nhapautho();}else{}
 $a5="T:$t";
 $a1="authorization:$autho";
 $a2="user-agent:Mozilla/5.0 (Linux; Android 9; SM-G977N Build/PQ3B.190801.04011457) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36";
