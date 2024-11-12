@@ -93,6 +93,16 @@ function performTask($cookie) {
     $xpath = new DOMXPath($doc);
 
     // Tìm phần tử chứa thông tin nhiệm vụ
+    $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
+    
+    // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
+    $time = null;
+    if ($timeNode) {
+        preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
+        $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
+    }
+
+    // Tìm nút làm nhiệm vụ (buttonNode)
     $buttonNode = $xpath->query('//button[contains(@class, "btn-success")]')->item(0);
     if ($buttonNode) {
         $urll = $buttonNode->getAttribute('onclick');
@@ -106,16 +116,6 @@ function performTask($cookie) {
         $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
         if ($csrf_token === null) {
             return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
-        }
-
-        // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
-        
-        // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
-        $time = null;
-        if ($timeNode) {
-            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-            $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
         }
 
         if ($urll && $time) {
@@ -173,7 +173,17 @@ function performTasks($cookie) {
     @$doc->loadHTML($response);
     $xpath = new DOMXPath($doc);
 
-    // Tìm phần tử chứa thông tin nhiệm vụ ở vòng 2
+    // Tìm phần tử chứa thông tin nhiệm vụ ở vòng 2 (timeNode trước khi tìm buttonNode)
+    $timeNode = $xpath->query('//*[@id="iframe"]/div/div[2]/div/div/span[@class="badge span-danger text-danger"]')->item(0);
+    
+    // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
+    $time = null;
+    if ($timeNode) {
+        preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
+        $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
+    }
+
+    // Tìm phần tử chứa nút làm nhiệm vụ ở vòng 2
     $buttonNode = $xpath->query('//*[@id="iframe"]/div/div[2]/div/div/button')->item(0); // XPath mới cho button
     if ($buttonNode) {
         $urll = $buttonNode->getAttribute('onclick');
@@ -189,16 +199,6 @@ function performTasks($cookie) {
             return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
         }
 
-        // Chờ đợi và làm nhiệm vụ
-        $timeNode = $xpath->query('//*[@id="iframe"]/div/div[2]/div/div/span[@class="badge span-danger text-danger"]')->item(0); // XPath mới cho timeNode
-        
-        // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
-        $time = null;
-        if ($timeNode) {
-            preg_match('/(\d+)\s+seconds/', $timeNode->nodeValue, $matches);
-            $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
-        }
-
         if ($urll && $time) {
             // Đếm ngược thời gian làm nhiệm vụ
             for ($t = $time; $t > 0; $t--) {
@@ -207,7 +207,7 @@ function performTasks($cookie) {
             }
 
             // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
-            $postData = ['csrf_token_name' => $csrf_token];  // Tên CSRF token và giá trị cần thay đổi theo thực tế
+            $postData = ['csrf_token_name' => $csrf_token];
             $sv = basename($urll);
             $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
 
