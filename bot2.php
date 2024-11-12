@@ -188,7 +188,7 @@ function performTasks($cookie) {
                 $response = fetchPage($taskUrl, $cookie);
                 
                 // Chờ đợi và làm nhiệm vụ
-                $timeNode = $xpath->query('//*[@id="iframe"]/div/div[1]/div/div/div[2]/div/span[2]/i'')->item(0);
+                $timeNode = $xpath->query('//*[@id="iframe"]/div/div[1]/div/div/div[2]/div/span[2]/i')->item(0);
 
                 // Đảm bảo $time có giá trị mặc định nếu không tìm thấy
                 $time = null;
