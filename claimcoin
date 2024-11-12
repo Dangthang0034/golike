@@ -61,12 +61,31 @@ function fetchPage($url, $cookie) {
 
     return $response;
 }
-getTokenBalance($cookie);
+
+// Hàm để lấy CSRF token
+function getCsrfToken($cookie, $url) {
+    $response = fetchPage($url, $cookie);
+
+    // Phân tích HTML và lấy CSRF token
+    $doc = new DOMDocument();
+    @$doc->loadHTML($response);
+    $xpath = new DOMXPath($doc);
+
+    // Tìm phần tử chứa CSRF token
+    $csrfNode = $xpath->query('//input[contains(@name, "csrf")]')->item(0);  // Thay "csrf" bằng tên thực tế
+    if ($csrfNode) {
+        return $csrfNode->getAttribute('value');
+    } else {
+        echo "Không tìm thấy CSRF token.\n";
+        return null;
+    }
+}
+
 // Hàm để thực hiện nhiệm vụ
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
-    sleep(2);
+
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -95,16 +114,14 @@ function performTask($cookie) {
                 sleep(1);
             }
 
-            // Thực hiện bước xác nhận
-            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
-            if ($csrfNode) {
-                $csrf_token = $csrfNode->getAttribute('value');
-            } else {
-                echo "Không tìm thấy csrf_token_name.\n";
-                return false; // Không thể hoàn thành nhiệm vụ
+            // Lấy CSRF token tại đây
+            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
+            if ($csrf_token === null) {
+                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
             }
 
-            $postData = ['csrf_token_name' => $csrf_token];
+            // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
+            $postData = ['csrf_token_name' => $csrf_token];  // Tên CSRF token và giá trị cần thay đổi theo thực tế
             $sv = basename($urll);
             $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
 
@@ -145,7 +162,7 @@ function performTask($cookie) {
 function performTasks($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
-    sleep(2);
+
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -174,15 +191,13 @@ function performTasks($cookie) {
                 sleep(1);
             }
 
-            // Thực hiện bước xác nhận
-            $csrfNode = $xpath->query('//input[@name="csrf_token_name"]')->item(0);
-            if ($csrfNode) {
-                $csrf_token = $csrfNode->getAttribute('value');
-            } else {
-                echo "Không tìm thấy csrf_token_name.\n";
-                return false; // Không thể hoàn thành nhiệm vụ
+            // Lấy CSRF token tại đây
+            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
+            if ($csrf_token === null) {
+                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
             }
 
+            // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
             $postData = ['csrf_token_name' => $csrf_token];
             $sv = basename($urll);
             $urlPost = "https://claimcoin.in/ptc/verify/" . $sv;
@@ -231,9 +246,6 @@ do {
     if (!performTasks($cookie)) {
         break; // Nếu không có nhiệm vụ, thoát khỏi vòng lặp
     }
-
-    // Kiểm tra lại số dư token sau mỗi nhiệm vụ
-    getTokenBalance($cookie);
 
 } while (true);
 
