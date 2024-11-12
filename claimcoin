@@ -29,7 +29,7 @@ if (file_exists($cookieFile) && filesize($cookieFile) > 0) {
 function getTokenBalance($cookie) {
     $url = 'https://claimcoin.in/dashboard';
     $response = fetchPage($url, $cookie);
-
+    sleep(2);
     // Phân tích HTML và lấy số dư token
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -80,12 +80,12 @@ function getCsrfToken($cookie, $url) {
         return null;
     }
 }
- getTokenBalance($cookie);
+ 
 // Hàm để thực hiện nhiệm vụ
 function performTask($cookie) {
     $url = 'https://claimcoin.in/ptc';
     $response = fetchPage($url, $cookie);
-
+    sleep(2);
     // Phân tích HTML và lấy thông tin nhiệm vụ
     $doc = new DOMDocument();
     @$doc->loadHTML($response);
@@ -157,7 +157,7 @@ function performTask($cookie) {
         return false; // Không có nhiệm vụ
     }
 }
-
+getTokenBalance($cookie);
 // Hàm thực hiện vòng 2 các nhiệm vụ
 function performTasks($cookie) {
     $url = 'https://claimcoin.in/ptc';
