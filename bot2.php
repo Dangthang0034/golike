@@ -102,8 +102,9 @@ function performTasks($cookie) {
         $time = isset($matches[1]) ? $matches[1] : 0; // Nếu không tìm thấy, gán $time = 0
     }
 
-    // Tìm phần tử chứa nút làm nhiệm vụ ở vòng 2
-    $buttonNode = $xpath->query('//button[@class="btn btn-success btn-block" and contains(@onclick, "location.href")]')->item(0); // XPath mới cho button
+    // Tìm phần tử button chứa link làm nhiệm vụ (vòng 2) theo XPath mới của bạn
+    $buttonNode = $xpath->query('/html/body/div[1]/div[2]/div/div/div[4]/div/div[2]/div[2]/div/div[1]/div/div/button')->item(0);
+    
     if ($buttonNode) {
         $urll = $buttonNode->getAttribute('onclick');
         preg_match("/location.href='(.*?)'/", $urll, $urlMatches);
@@ -161,6 +162,7 @@ function performTasks($cookie) {
         return false; // Không có nhiệm vụ
     }
 }
+
 
 
 // Bắt đầu quá trình làm nhiệm vụ
