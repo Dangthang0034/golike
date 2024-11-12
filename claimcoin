@@ -100,7 +100,11 @@ function performTask($cookie) {
 
         // Thực hiện nhiệm vụ
         $response = fetchPage($urll, $cookie);
-
+            // Lấy CSRF token tại đây
+        $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
+        if ($csrf_token === null) {
+            return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
+            }
         // Chờ đợi và làm nhiệm vụ
         $timeNode = $xpath->query('//span[@class="badge span-danger text-danger"]')->item(0);
         
@@ -117,11 +121,7 @@ function performTask($cookie) {
                 sleep(1);
             }
 
-            // Lấy CSRF token tại đây
-            $csrf_token = getCsrfToken($cookie, $urll); // Lấy CSRF token từ URL nhiệm vụ
-            if ($csrf_token === null) {
-                return false; // Không thể thực hiện nhiệm vụ nếu không có CSRF token
-            }
+
 
             // Gửi yêu cầu xác nhận nhiệm vụ với CSRF token
             $postData = ['csrf_token_name' => $csrf_token];  // Tên CSRF token và giá trị cần thay đổi theo thực tế
