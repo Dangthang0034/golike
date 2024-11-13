@@ -1,62 +1,45 @@
 <?php
 
-// Thông tin đăng nhập
-$username = "dangthang003@gmail.com";
-$password = "ThangBich199@#";
-
-// URL đăng nhập và URL của trang kiểm tra số dư
-$url_login = "https://aviso.bz/login";
-$url_work_serf = "https://aviso.bz/work-serf";
-
-// Cấu hình cURL
-$ch = curl_init();
-
-// Thiết lập các tùy chọn cURL cho việc đăng nhập
-curl_setopt($ch, CURLOPT_URL, $url_login);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, [
-    'username' => $username,
-    'password' => $password
-]);
-
-// Lấy kết quả đăng nhập (có thể kiểm tra các lỗi ở đây)
-$response = curl_exec($ch);
-
-// Kiểm tra kết quả đăng nhập
-if ($response === false) {
-    echo "Lỗi khi đăng nhập: " . curl_error($ch);
-    exit();
+// Hàm glike để gửi yêu cầu GET với các tiêu đề tùy chỉnh
+function glike($host, $tsm) {
+    // Khởi tạo cURL
+    $mr = curl_init();
+    
+    // Cấu hình các tùy chọn cURL
+    curl_setopt_array($mr, array(
+        CURLOPT_PORT => "443",  // Cổng HTTPS
+        CURLOPT_URL => "$host",  // URL đích
+        CURLOPT_RETURNTRANSFER => true,  // Trả về kết quả dưới dạng chuỗi
+        CURLOPT_SSL_VERIFYPEER => false,  // Tắt xác minh SSL (thường dùng cho các môi trường không xác thực SSL)
+        CURLOPT_TIMEOUT => 30,  // Thời gian chờ (30 giây)
+        CURLOPT_CUSTOMREQUEST => "GET",  // Phương thức GET
+        CURLOPT_HTTPHEADER => $tsm  // Tiêu đề HTTP tùy chỉnh
+    ));
+    
+    // Thực thi yêu cầu cURL và lấy phản hồi
+    $mr2 = curl_exec($mr);
+    
+    // Đóng kết nối cURL
+    curl_close($mr);
+    
+    // Trả về kết quả phản hồi
+    return $mr2;
 }
 
-// Sau khi đăng nhập, gửi yêu cầu GET để lấy thông tin số dư
-curl_setopt($ch, CURLOPT_URL, $url_work_serf);
-curl_setopt($ch, CURLOPT_POST, false);  // Đổi lại thành GET
-$response = curl_exec($ch);
+// Ví dụ sử dụng hàm glike
+$host = "https://aviso.bz/work-serf";  // URL cần truy cập
+$tsm = array(  // Tiêu đề HTTP tùy chỉnh (có thể thay đổi theo yêu cầu)
+    "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+);
 
-// Kiểm tra nếu có lỗi khi lấy trang
+// Gọi hàm glike và lấy kết quả
+$response = glike($host, $tsm);
+
+// Kiểm tra và hiển thị kết quả
 if ($response === false) {
-    echo "Lỗi khi lấy trang: " . curl_error($ch);
-    exit();
-}
-
-// Sử dụng thư viện Simple HTML DOM để phân tích HTML và lấy số dư
-require_once('vendor/autoload.php');  // Đảm bảo bạn đã cài đặt Simple HTML DOM
-
-// Tạo đối tượng DOM
-$dom = new simple_html_dom();
-$dom->load($response);
-
-// Tìm phần tử chứa số dư
-$balance_element = $dom->find('#new-money-ballans', 0);
-
-// Kiểm tra và in ra số dư
-if ($balance_element) {
-    echo "Số dư hiện tại của bạn: " . $balance_element->plaintext . "\n";
+    echo "Lỗi khi gửi yêu cầu.\n";
 } else {
-    echo "Không tìm thấy số dư trên trang.\n";
+    echo "Kết quả từ máy chủ: \n";
+    echo $response;  // In ra kết quả nhận được
 }
-
-// Đóng cURL
-curl_close($ch);
 ?>
