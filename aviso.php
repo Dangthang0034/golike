@@ -43,6 +43,7 @@ if ($response === false) {
 // Sử dụng thư viện Simple HTML DOM để phân tích HTML và lấy số dư
 require_once('vendor/autoload.php');  // Đảm bảo bạn đã cài đặt Simple HTML DOM
 
+// Tạo đối tượng DOM
 $dom = new simple_html_dom();
 $dom->load($response);
 
