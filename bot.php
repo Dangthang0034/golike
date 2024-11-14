@@ -48,6 +48,7 @@ $a1="authorization:$autho";
 $a2="user-agent:Mozilla/5.0 (Linux; Android 9; SM-G977N Build/PQ3B.190801.04011457) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36";
 $tsm=array($a1,$a2,$a3,$a4,$a5);
 $tkok=json_decode(glike($u2,$tsm),true);clear();
+sleep(1);
 while(true){
 for($i=0;$i<$mlen;$i++){
 $id=$tkok['data'][$i]['id'];
