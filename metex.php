@@ -77,13 +77,50 @@ function requestCookie($cookieFile) {
     return $cookie;
 }
 
+// Hàm kiểm tra số dư từ trang web
+function checkBalance($cookie) {
+    $url = 'https://meteex.biz/golden_ticket';  // URL của trang cần kiểm tra số dư
+
+    // Khởi tạo cURL để kiểm tra số dư
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_COOKIE, $cookie);  // Dùng cookie
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
+
+    // Gửi yêu cầu và nhận nội dung phản hồi
+    $response = curl_exec($ch);
+    if (curl_errno($ch)) {
+        echo 'Error:' . curl_error($ch);
+        curl_close($ch);
+        return false;  // Nếu có lỗi, trả về false
+    }
+
+    curl_close($ch);
+
+    // Tìm số dư trong phản hồi của trang (dùng chuỗi để tìm số dư)
+    if (preg_match('/<span id="new-money-ballans">.*?<span class="new-up-osn" translate="no">(.*?)<\/span>.*?<span style="margin-left: 5px;font-size: 14px;">/', $response, $matches)) {
+        return $matches[1];  // Trả về số dư tìm được
+    }
+
+    return false;  // Nếu không tìm thấy số dư, trả về false
+}
+
 // Hàm chính
 function main() {
     // Kiểm tra cookie và yêu cầu nhập nếu không hợp lệ
     $cookie = requestCookie('metex.txt');
-    // Số dư có thể được kiểm tra sau khi cookie hợp lệ
-    echo "Cookie hợp lệ: $cookie\n";
+    // Kiểm tra số dư sau khi cookie hợp lệ
+    echo "Đang kiểm tra số dư với cookie...\n";
+    $balance = checkBalance($cookie);
+
+    if ($balance) {
+        echo "Số dư hiện tại: $balance\n";  // In ra số dư nếu có
+    } else {
+        echo "Không thể lấy số dư hoặc cookie không hợp lệ.\n";
+    }
 }
 
 main();
+
 ?>
