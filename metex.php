@@ -1,11 +1,10 @@
 <?php
-include('simple_html_dom.php');  // Nếu bạn đã tải thư viện simple_html_dom.php
 
 // URL của trang cần truy cập
 $url = 'https://meteex.biz/golden_ticket';
 
-// Cookie
-$cookie = 'cookie_của_bạn';
+// Cookie (đọc từ file hoặc đã có sẵn)
+$cookie = 'cookie_của_bạn';  // Đảm bảo rằng bạn đã có cookie hợp lệ
 
 // Khởi tạo cURL để gửi yêu cầu
 $ch = curl_init();
@@ -16,25 +15,15 @@ curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
 $response = curl_exec($ch);
 curl_close($ch);
 
-// Tạo đối tượng DOM từ phản hồi
-$html = str_get_html($response);
+// In toàn bộ phản hồi HTML từ trang
+echo "Nội dung phản hồi trang:\n";
+echo $response;
 
-// Tìm phần tử chứa số dư
-$balanceElement = $html->find('span#new-money-ballans .new-up-osn', 0);
-
-if ($balanceElement) {
-    // Lấy số dư chính
-    $balance = $balanceElement->plaintext;
-
-    // Lấy phần thập phân
-    $decimalPart = $balanceElement->find('.format-price-lite', 0)->plaintext;
-
-    // Kết hợp cả phần chính và phần thập phân
-    $fullBalance = $balance . $decimalPart;
-
-    echo "Số dư hiện tại: " . $fullBalance . " RUB\n";
+// Kiểm tra xem số dư có xuất hiện trong phản hồi hay không
+if (strpos($response, 'new-money-ballans') !== false) {
+    echo "\nSố dư được tìm thấy trong phản hồi.\n";
 } else {
-    echo "Không tìm thấy số dư trong phản hồi.\n";
+    echo "\nKhông tìm thấy số dư trong phản hồi.\n";
 }
 
 ?>
