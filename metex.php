@@ -25,18 +25,26 @@ $response = curl_exec($ch);
 if($response === false) {
     echo "Lỗi cURL: " . curl_error($ch) . "\n";  // In lỗi nếu có
 } else {
-    // In toàn bộ phản hồi HTML từ trang
-    echo "Nội dung phản hồi trang:\n";
-    echo $response;
+    // Nếu phản hồi thành công, tiếp tục xử lý HTML
+    echo "Đã tải trang thành công.\n";
+    
+    // Tạo đối tượng DOMDocument để phân tích cú pháp HTML
+    $dom = new DOMDocument();
+    @$dom->loadHTML($response); // Tải HTML vào DOM (sử dụng @ để bỏ qua các lỗi thông báo về HTML không hợp lệ)
+
+    // Tìm tất cả các phần tử có id "new-money-ballans"
+    $xpath = new DOMXPath($dom);
+    $balanceElement = $xpath->query('//*[@id="new-money-ballans"]/span[@class="new-up-osn"]');
+    
+    // Kiểm tra nếu tìm thấy phần tử và lấy giá trị
+    if ($balanceElement->length > 0) {
+        $balance = $balanceElement->item(0)->nodeValue;
+        echo "Số dư hiện tại: $balance\n";  // In số dư
+    } else {
+        echo "Không tìm thấy số dư trong phản hồi.\n";
+    }
 }
 
+// Đóng cURL
 curl_close($ch);
-
-// Kiểm tra xem số dư có xuất hiện trong phản hồi hay không
-if (strpos($response, 'new-money-ballans') !== false) {
-    echo "\nSố dư được tìm thấy trong phản hồi.\n";
-} else {
-    echo "\nKhông tìm thấy số dư trong phản hồi.\n";
-}
-
 ?>
