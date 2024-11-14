@@ -28,17 +28,13 @@ if($response === false) {
     // Nếu phản hồi thành công, tiếp tục xử lý HTML
     echo "Đã tải trang thành công.\n";
     
-    // Tạo đối tượng DOMDocument để phân tích cú pháp HTML
-    $dom = new DOMDocument();
-    @$dom->loadHTML($response); // Tải HTML vào DOM (sử dụng @ để bỏ qua các lỗi thông báo về HTML không hợp lệ)
+    // Dùng preg_match để tìm số dư
+    // Biểu thức chính quy để tìm số dư
+    preg_match('/<span class="new-up-osn"[^>]*>([\d\.]+)<\/span>/', $response, $matches);
 
-    // Tìm tất cả các phần tử có id "new-money-ballans"
-    $xpath = new DOMXPath($dom);
-    $balanceElement = $xpath->query('//*[@id="new-money-ballans"]/span[@class="new-up-osn"]');
-    
-    // Kiểm tra nếu tìm thấy phần tử và lấy giá trị
-    if ($balanceElement->length > 0) {
-        $balance = $balanceElement->item(0)->nodeValue;
+    // Kiểm tra nếu số dư được tìm thấy
+    if (isset($matches[1])) {
+        $balance = $matches[1];  // Lấy số dư từ kết quả của preg_match
         echo "Số dư hiện tại: $balance\n";  // In số dư
     } else {
         echo "Không tìm thấy số dư trong phản hồi.\n";
