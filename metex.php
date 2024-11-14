@@ -65,43 +65,44 @@ function checkBalance($cookie) {
     }
     curl_close($ch);
 
+    // Kiểm tra trạng thái phản hồi của trang web
+    if (strpos($response, 'cookie expired') !== false || strpos($response, 'session expired') !== false) {
+        return null;  // Nếu cookie hết hạn, trả về null
+    }
+
     // Sử dụng hàm extractBalanceFromHTML để lấy số dư từ nội dung phản hồi
     return extractBalanceFromHTML($response);
 }
 
 // Hàm yêu cầu và kiểm tra cookie
 function requestCookie($cookieFile) {
-    $attempt = 0; // Biến đếm số lần nhập cookie
+    $cookie = getCookieInput($cookieFile);  // Lấy cookie từ tệp hoặc yêu cầu nhập
 
-    while (true) {
-        $cookie = getCookieInput($cookieFile);  // Lấy cookie từ tệp hoặc yêu cầu nhập
+    echo "Đang kiểm tra số dư với cookie...\n";
+    $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
 
-        echo "Đang kiểm tra số dư với cookie...\n";
-        $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
+    if ($balance) {
+        echo "Số dư hiện tại: $balance\n";  // In ra số dư
+    } else {
+        echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
+        // Yêu cầu nhập lại cookie
+        $cookie = getCookieInput($cookieFile);  // Nhập lại cookie từ màn hình
+
+        echo "Đang kiểm tra số dư với cookie mới...\n";
+        $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie mới
 
         if ($balance) {
-            echo "Số dư hiện tại: $balance\n";  // In ra số dư
-            return $cookie;  // Nếu số dư hợp lệ, trả về cookie và thoát khỏi vòng lặp
+            echo "Số dư hiện tại: $balance\n";  // In ra số dư nếu thành công
         } else {
-            echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
-            // Xóa tệp cookie cũ và yêu cầu nhập lại
-            file_put_contents($cookieFile, '');  // Xóa cookie cũ trong tệp
-            $attempt++;
-
-            if ($attempt >= 3) {
-                echo "Lỗi: Đã thử 3 lần nhập cookie không hợp lệ. Chương trình kết thúc.\n";
-                exit(1);  // Kết thúc chương trình nếu nhập sai 3 lần
-            }
+            echo "Cookie vẫn không hợp lệ sau khi nhập lại. Chương trình kết thúc.\n";
+            exit(1);  // Kết thúc nếu cookie vẫn không hợp lệ
         }
     }
 }
 
 // Chạy mã chính
 function main() {
-    $cookie = requestCookie('metex.txt');  // Lấy cookie từ tệp hoặc yêu cầu nhập
-
-    // Lặp lại cho đến khi cookie hợp lệ và số dư được kiểm tra thành công
-    echo "Quá trình hoàn tất. Số dư đã được kiểm tra và cookie hợp lệ.\n";
+    requestCookie('metex.txt');  // Lấy cookie từ tệp hoặc yêu cầu nhập và kiểm tra số dư
 }
 
 main();
