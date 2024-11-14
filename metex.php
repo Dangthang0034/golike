@@ -9,7 +9,7 @@ function getCookieInput($cookieFile) {
     if (file_exists($cookieFile)) {
         // Đọc cookie từ tệp
         $cookie = file_get_contents($cookieFile);
-        echo "Đã tìm thấy cookie cũ: \n$cookie\n";
+        
         return $cookie;
     } else {
         // Nếu tệp không tồn tại, tạo tệp mới
