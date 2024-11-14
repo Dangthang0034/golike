@@ -177,9 +177,6 @@ if ($type == "follow") {
     }
 
     mothai();  // Giấu thông báo đang đợi
-
-    echo "Đang nhận tiền... \r";
-
     // Kiểm tra số lượng người đang follow sau khi thực hiện nhiệm vụ
     $floo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
     $cfloo = explode(',', explode('following":', $floo)[1])[0];
@@ -191,7 +188,9 @@ if ($type == "follow") {
         continue;  // Tiếp tục vòng lặp chính
     }
 
+
     // Nếu đã thay đổi, bắt đầu nhận tiền
+    echo "Đang nhận tiền... \r";
     $ll = 0;
     while ($ll < $mlen) {
         $ll++;
