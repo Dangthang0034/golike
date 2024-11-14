@@ -5,6 +5,7 @@ $cookieFile = 'metex.txt';
 
 // Hàm yêu cầu nhập cookie từ người dùng hoặc đọc từ file
 function getCookieInput($cookieFile) {
+    // Kiểm tra xem có file cookie không
     if (file_exists($cookieFile)) {
         // Đọc cookie từ file nếu có
         $cookie = file_get_contents($cookieFile);
@@ -14,6 +15,17 @@ function getCookieInput($cookieFile) {
         echo "Nhập cookie (đảm bảo rằng mỗi cookie cách nhau bằng dấu ';'):\n";
         $cookie = trim(fgets(STDIN));
     }
+
+    // Kiểm tra tính hợp lệ của cookie (bạn có thể thay đổi hàm checkCookieStatus nếu cần)
+    if (!checkCookieStatus($cookie)) {
+        // Nếu cookie không hợp lệ, yêu cầu nhập lại cookie
+        echo "Cookie không hợp lệ. Vui lòng nhập lại cookie.\n";
+        $cookie = getCookieInput($cookieFile);  // Lặp lại yêu cầu nhập cookie
+    }
+
+    // Khi cookie hợp lệ, ghi lại vào file để dùng cho lần sau
+    file_put_contents($cookieFile, $cookie);  // Ghi đè cookie vào file
+
     return $cookie;
 }
 
@@ -115,17 +127,7 @@ function checkAndClickTask($cookie) {
 // Hàm chính để kiểm tra và thực hiện
 function main($cookieFile) {
     // Vòng lặp kiểm tra cookie và xử lý nếu không hợp lệ
-    while (true) {
-        $cookie = getCookieInput($cookieFile);  // Lấy cookie từ file hoặc nhập từ người dùng
-
-        // Kiểm tra tính hợp lệ của cookie
-        if (checkCookieStatus($cookie)) {
-            echo "Cookie hợp lệ.\n";
-            break; // Thoát vòng lặp khi cookie hợp lệ
-        } else {
-            echo "Cookie không hợp lệ. Vui lòng nhập lại cookie.\n";
-        }
-    }
+    $cookie = getCookieInput($cookieFile);  // Lấy cookie từ file hoặc nhập từ người dùng
 
     // Kiểm tra và bấm nút vào nhiệm vụ
     checkAndClickTask($cookie);
