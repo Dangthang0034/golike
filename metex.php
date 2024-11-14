@@ -9,7 +9,7 @@ function getCookieInput($cookieFile) {
     if (file_exists($cookieFile)) {
         // Đọc cookie từ tệp
         $cookie = file_get_contents($cookieFile);
-        
+        echo "Đã tìm thấy cookie cũ: \n$cookie\n";
         return $cookie;
     } else {
         // Nếu tệp không tồn tại, tạo tệp mới
@@ -106,6 +106,52 @@ function checkBalance($cookie) {
     return false;  // Nếu không tìm thấy số dư, trả về false
 }
 
+// Hàm lấy thông tin về các nhiệm vụ từ trang công việc
+function getTaskData($cookie) {
+    $url = 'https://meteex.biz/work-serf?ctrll=ee332be535014f4f86c7ef8594d46aaeee332be535014f4f86c7ef8594d46aae'; // URL của trang công việc
+
+    // Khởi tạo cURL để lấy dữ liệu nhiệm vụ
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_COOKIE, $cookie);  // Dùng cookie
+    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
+
+    // Gửi yêu cầu và nhận nội dung phản hồi
+    $response = curl_exec($ch);
+    if (curl_errno($ch)) {
+        echo 'Error:' . curl_error($ch);
+        curl_close($ch);
+        return false;  // Nếu có lỗi, trả về false
+    }
+
+    curl_close($ch);
+
+    // Tìm kiếm các phần tử nhiệm vụ có id bắt đầu với 'serf-link-'
+    preg_match_all('/<div id="serf-link-(\d+)"/', $response, $matches);
+    if (empty($matches[1])) {
+        echo "Không tìm thấy nhiệm vụ.\n";
+        return false;
+    }
+
+    // Lấy id của nhiệm vụ đầu tiên
+    $taskId = $matches[1][0];
+    echo "Đã tìm thấy nhiệm vụ với ID: $taskId\n";
+
+    // Tìm phần tử nút bắt đầu của nhiệm vụ
+    $startButtonSelector = "#start-serf-$taskId > div";
+    echo "Tìm phần tử nút bấm: $startButtonSelector\n";
+
+    // Kiểm tra xem phần tử nút bấm có xuất hiện không
+    if (strpos($response, $startButtonSelector) !== false) {
+        echo "Nút bấm đã xuất hiện. Tiến hành bấm...\n";
+        return true;
+    }
+
+    echo "Không tìm thấy nút bấm.\n";
+    return false;
+}
+
 // Hàm chính
 function main() {
     // Kiểm tra cookie và yêu cầu nhập nếu không hợp lệ
@@ -118,6 +164,14 @@ function main() {
         echo "Số dư hiện tại: $balance\n";  // In ra số dư nếu có
     } else {
         echo "Không thể lấy số dư hoặc cookie không hợp lệ.\n";
+        return;
+    }
+
+    // Truy cập trang công việc và kiểm tra nhiệm vụ
+    if (getTaskData($cookie)) {
+        echo "Nhiệm vụ sẵn sàng để thực hiện.\n";
+    } else {
+        echo "Không thể thực hiện nhiệm vụ.\n";
     }
 }
 
