@@ -26,7 +26,7 @@ function getCookieInput($cookieFile) {
 
 // Hàm kiểm tra số dư từ trang web
 function checkBalance($cookie) {
-    $url = 'https://meteex.biz';  // Thay bằng URL bạn cần kiểm tra
+    $url = 'https://meteex.biz/golden_ticket';  // URL của trang chứa số dư
 
     // Khởi tạo cURL
     $ch = curl_init();
@@ -43,10 +43,8 @@ function checkBalance($cookie) {
     curl_close($ch);
 
     // Kiểm tra nếu số dư xuất hiện trong phản hồi
-    if (strpos($response, 'Số dư:') !== false) {
-        preg_match('/Số dư:\s*([\d\.]+)/', $response, $matches);
+    if (preg_match('/<span id="new-money-ballans">.*?<span class="new-up-osn"[^>]*>([\d\.]+)<\/span>/', $response, $matches)) {
         $balance = $matches[1] ?? null;
-
         if ($balance) {
             return $balance;  // Trả về số dư nếu tìm thấy
         }
@@ -55,87 +53,31 @@ function checkBalance($cookie) {
     return null;  // Nếu không tìm thấy số dư
 }
 
-// Hàm thực hiện bấm vào phần tử sau khi tìm
-function clickTask($cookie) {
-    $url = 'https://meteex.biz/work-serf?ctrll=ee332be535014f4f86c7ef8594d46aaeee332be535014f4f86c7ef8594d46aae';  // Thay bằng URL trang chứa nhiệm vụ
+// Hàm yêu cầu và kiểm tra cookie
+function requestCookie($cookieFile) {
+    while (true) {
+        $cookie = getCookieInput($cookieFile);  // Lấy cookie từ tệp hoặc yêu cầu nhập
 
-    // Khởi tạo cURL để lấy nội dung trang
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
-    $response = curl_exec($ch);
-    
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-    }
-    curl_close($ch);
+        echo "Đang kiểm tra số dư với cookie...\n";
+        $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
 
-    // Tìm phần tử đầu tiên với ID "start-serf-" (số đằng sau có thể thay đổi)
-    if (preg_match('/<div class="adv-line-cell-2" id="start-serf-(\d+)">/', $response, $matches)) {
-        $taskId = $matches[1];  // Lấy ID nhiệm vụ
-        echo "Đã tìm thấy nhiệm vụ với ID: $taskId\n";
-        // In nội dung phần tử đã tìm thấy (nếu cần)
-        echo "Nội dung phần tử tìm thấy: \n";
-        echo $matches[0];  // In phần tử đầu tiên
-
-        // Tiến hành tìm và thực hiện thao tác bấm vào nút (Giả định bấm bằng cURL hoặc bạn có thể thực hiện thao tác JS)
-        if (preg_match('/onclick="funcjs\[\'go-serf\'\]\(\'(\d+)\',\'[a-f0-9]+\');/', $response, $matches)) {
-            $taskId = $matches[1];
-            echo "Bấm vào nhiệm vụ với ID: $taskId\n";
-            // Bạn có thể thực hiện các bước bấm tiếp theo (sử dụng cURL hoặc thư viện hỗ trợ JS nếu cần)
-            // Ví dụ bạn có thể thực hiện hành động bằng cURL để tiếp tục làm việc với trang sau khi bấm
+        if ($balance) {
+            echo "Số dư hiện tại: $balance\n";  // In ra số dư
+            return $cookie;  // Nếu số dư hợp lệ, trả về cookie và thoát khỏi vòng lặp
+        } else {
+            echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
+            // Xóa tệp cookie cũ và yêu cầu nhập lại
+            file_put_contents($cookieFile, '');  // Xóa cookie cũ trong tệp
         }
-    } else {
-        echo "Không tìm thấy nhiệm vụ nào để bấm.\n";
-    }
-}
-
-// Hàm kiểm tra phần tử <a class="start-yes-serf">
-function checkIfButtonAppears($cookie) {
-    $url = 'https://meteex.biz';  // URL của trang chứa nhiệm vụ
-
-    // Khởi tạo cURL để lấy nội dung trang sau khi bấm
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
-    $response = curl_exec($ch);
-
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-    }
-    curl_close($ch);
-
-    // Kiểm tra nếu phần tử <a class="start-yes-serf"> xuất hiện
-    if (strpos($response, 'class="start-yes-serf"') !== false) {
-        echo "Đã tìm thấy phần tử <a class=\"start-yes-serf\">.\n";
-    } else {
-        echo "Không tìm thấy phần tử <a class=\"start-yes-serf\">.\n";
     }
 }
 
 // Chạy mã chính
 function main() {
-    $cookie = getCookieInput('metex.txt');  // Lấy cookie từ tệp hoặc yêu cầu nhập
+    $cookie = requestCookie('metex.txt');  // Lấy cookie từ tệp hoặc yêu cầu nhập
 
-    echo "Đang kiểm tra số dư...\n";
-    $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
-
-    if ($balance) {
-        echo "Số dư hiện tại: $balance\n";  // In ra số dư
-        // Nếu số dư hợp lệ, tiếp tục thực hiện các hành động khác (bấm vào nhiệm vụ)
-        clickTask($cookie);  // Tiến hành bấm vào nhiệm vụ
-        checkIfButtonAppears($cookie);  // Kiểm tra xem phần tử đã xuất hiện chưa
-    } else {
-        // Nếu không có số dư hoặc cookie die, yêu cầu nhập lại cookie
-        echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
-        // Xóa tệp cookie cũ và yêu cầu nhập lại
-        file_put_contents('metex.txt', '');  // Xóa cookie cũ trong tệp
-        getCookieInput('metex.txt');  // Yêu cầu nhập lại cookie
-    }
+    // Lặp lại cho đến khi cookie hợp lệ và số dư được kiểm tra thành công
+    echo "Quá trình hoàn tất. Số dư đã được kiểm tra và cookie hợp lệ.\n";
 }
 
 main();
