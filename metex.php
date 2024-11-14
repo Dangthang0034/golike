@@ -5,26 +5,31 @@ $cookieFile = 'metex.txt';
 
 // Hàm để lấy cookie từ tệp hoặc yêu cầu người dùng nhập nếu chưa có
 function getCookieInput($cookieFile) {
+    // Nếu tệp cookie đã tồn tại, đọc cookie từ tệp
     if (file_exists($cookieFile)) {
-        // Đọc cookie từ file nếu có
         $cookie = file_get_contents($cookieFile);
         echo "Đã tìm thấy cookie cũ. Kiểm tra cookie...\n";
     } else {
-        // Nếu không có cookie trong file, yêu cầu nhập từ người dùng
+        // Nếu tệp cookie không tồn tại, yêu cầu người dùng nhập cookie
         echo "Nhập cookie (đảm bảo rằng mỗi cookie cách nhau bằng dấu ';'):\n";
         $cookie = trim(fgets(STDIN));
     }
 
-    // Kiểm tra tính hợp lệ của cookie bằng cách gửi yêu cầu HTTP và kiểm tra trạng thái phản hồi
-    $isValid = checkCookieValidity($cookie);
-    if (!$isValid) {
-        echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
-        return getCookieInput($cookieFile); // Yêu cầu nhập lại nếu không hợp lệ
+    // Kiểm tra tính hợp lệ của cookie
+    while (true) {
+        echo "Kiểm tra tính hợp lệ của cookie...\n";
+        $isValid = checkCookieValidity($cookie);  // Kiểm tra tính hợp lệ của cookie
+        
+        // Nếu cookie không hợp lệ, yêu cầu nhập lại
+        if (!$isValid) {
+            echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie:\n";
+            $cookie = trim(fgets(STDIN));  // Yêu cầu người dùng nhập lại cookie
+        } else {
+            // Nếu cookie hợp lệ, ghi vào tệp và thoát khỏi vòng lặp
+            file_put_contents($cookieFile, $cookie);
+            return $cookie;  // Trả về cookie hợp lệ
+        }
     }
-
-    // Nếu hợp lệ, ghi lại cookie vào tệp để sử dụng lần sau
-    file_put_contents($cookieFile, $cookie);
-    return $cookie;
 }
 
 // Hàm để kiểm tra tính hợp lệ của cookie
