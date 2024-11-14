@@ -159,26 +159,65 @@ if ($type == "like") {
     }
 }
 
-if($type=="follow"){
-	$flo=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-	$cflo=explode(',',explode('following":',$flo)[1])[0];
-echo"Mở đường dẫn...\r";
-termux();
-for($delay;$delay<$mlen;$delay--){
-if($delay==0){break;}
-echo"Vui lòng thực hiện nhiệm vụ $type $delay giây \r";sleep(1);}
-mothai();
-echo"Đang nhận tiền... \r";
-$floo=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-$cfloo=explode(',',explode('following":',$floo)[1])[0];
-if($cfloo==$cflo){baoloi();continue;}
-$ll=0;
-while($ll<$mlen){$ll++;
-	if($ll>2){baoloi();break;}
-	$nhantien=json_decode(plike($u4,$tsm,$danhan),true);$ketqua=$nhantien['status'];
-	if($ketqua==200){$poi=$nhantien['data']['prices'];$poii=$poi+$poiii;$tg=date("G:i:s", time());mothai();
-	echo"$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";$sp=$stt+1;$stt=$sp;
-	continue;}}
+if ($type == "follow") {
+    // Lấy số lượng người đang follow trước khi thực hiện nhiệm vụ
+    $flo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $cflo = explode(',', explode('following":', $flo)[1])[0];
+
+    echo "Mở đường dẫn...\r";
+    termux();  // Mở đường dẫn
+
+    // Đợi trong khoảng thời gian delay
+    for ($delay; $delay < $mlen; $delay--) {
+        if ($delay == 0) {
+            break;
+        }
+        echo "Vui lòng thực hiện nhiệm vụ $type $delay giây \r";
+        sleep(1);
+    }
+
+    mothai();  // Giấu thông báo đang đợi
+
+    echo "Đang nhận tiền... \r";
+
+    // Kiểm tra số lượng người đang follow sau khi thực hiện nhiệm vụ
+    $floo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $cfloo = explode(',', explode('following":', $floo)[1])[0];
+
+    // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
+    if ($cfloo == $cflo) {
+        echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
+        baoloi();  // Gọi hàm bỏ qua
+        continue;  // Tiếp tục vòng lặp chính
+    }
+
+    // Nếu đã thay đổi, bắt đầu nhận tiền
+    $ll = 0;
+    while ($ll < $mlen) {
+        $ll++;
+        if ($ll > 2) {
+            baoloi();  // Nếu lỗi quá 2 lần, bỏ qua
+            break;
+        }
+
+        // Gửi yêu cầu nhận tiền
+        $nhantien = json_decode(plike($u4, $tsm, $danhan), true);
+        $ketqua = $nhantien['status'];
+
+        if ($ketqua == 200) {
+            // Nhận tiền thành công
+            $poi = $nhantien['data']['prices'];
+            $poii = $poi + $poiii;  // Cập nhật tổng tiền đã nhận
+            $tg = date("G:i:s", time());
+            mothai();  // Giấu thông báo
+
+            // In kết quả nhận tiền
+            echo "$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";
+            $sp = $stt + 1;
+            $stt = $sp;
+            continue;  // Tiếp tục với công việc tiếp theo
+        }
+    }
 }
 	    for($k = 3;$k>0;$k--){
 		echo "delay tìm Job $k \r";sleep(1);}
