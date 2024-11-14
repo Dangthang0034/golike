@@ -39,23 +39,8 @@ function checkCookieStatus($cookie) {
     }
 }
 
-// Hàm kiểm tra số dư
-function checkBalance($cookie) {
-    // Kiểm tra cookie hợp lệ
-    if (!checkCookieStatus($cookie)) {
-        return false; // Cookie không hợp lệ
-    }
-
-    // Nếu cookie hợp lệ, kiểm tra số dư
-    $url = 'https://meteex.biz/golden_ticket';
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-    curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
-    $response = curl_exec($ch);
-    curl_close($ch);
-
+// Hàm lấy số dư từ phản hồi trang
+function getBalanceFromResponse($response) {
     // Tìm số dư trong phản hồi
     preg_match('/<span id="new-money-ballans">.*?<span class="new-up-osn" translate="no">([\d\.]+)<\/span>/', $response, $matches);
     if (!empty($matches[1])) {
@@ -64,8 +49,8 @@ function checkBalance($cookie) {
     return false;
 }
 
-// Hàm lấy dữ liệu nhiệm vụ và bấm nút
-function getTaskDataAndClick($cookie) {
+// Hàm kiểm tra và bấm nút
+function checkAndClickTask($cookie) {
     // Địa chỉ trang nhiệm vụ
     $url = 'https://meteex.biz/work-serf?ctrll=ee332be535014f4f86c7ef8594d46aaeee332be535014f4f86c7ef8594d46aae';
     
@@ -77,6 +62,15 @@ function getTaskDataAndClick($cookie) {
     curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
     $response = curl_exec($ch);
     curl_close($ch);
+
+    // Kiểm tra số dư trước khi bấm nút
+    echo "Đang kiểm tra số dư...\n";
+    $balance = getBalanceFromResponse($response);
+    if ($balance) {
+        echo "Số dư hiện tại: $balance\n"; // In ra số dư
+    } else {
+        echo "Không tìm thấy số dư trong phản hồi.\n";
+    }
 
     // Tìm kiếm các nhiệm vụ (dùng regex để tìm phần tử có id bắt đầu bằng "serf-link-")
     preg_match('/<div id="serf-link-(\d+)"/', $response, $matches);
@@ -109,6 +103,10 @@ function getTaskDataAndClick($cookie) {
         } else {
             echo "Không tìm thấy phần tử 'Bắt đầu xem' sau khi bấm nút.\n";
         }
+
+        // In phản hồi trang để xem có gì lạ
+        echo "Phản hồi trang sau khi bấm nút:\n";
+        echo $response;
     } else {
         echo "Không tìm thấy nhiệm vụ nào.\n";
     }
@@ -129,16 +127,8 @@ function main($cookieFile) {
         }
     }
 
-    // Kiểm tra số dư và chỉ hiển thị nếu hợp lệ
-    $balance = checkBalance($cookie);
-    if ($balance) {
-        echo "Số dư hiện tại: $balance\n";  // In ra số dư
-    } else {
-        echo "Không thể lấy số dư. Thử lại sau.\n";
-    }
-
-    // Truy cập và xử lý nhiệm vụ
-    getTaskDataAndClick($cookie);
+    // Kiểm tra và bấm nút vào nhiệm vụ
+    checkAndClickTask($cookie);
 }
 
 // Bắt đầu chương trình
