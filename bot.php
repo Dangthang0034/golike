@@ -92,33 +92,72 @@ $mid_list = explode('|', $file_content);
 while(true){$delay=$delayy;
 echo "Đang tìm Job.......\r";timjob();$link=$job['data']['link'];$type=$job['lock']['type'];$mid=$job['lock']['object_id'];
 $u4="https://$u.golike.net/api/advertising/publishers/tiktok/complete-jobs";$danhan='{"ads_id":'.$uid.',"account_id":'.$tid.',"async":true,"data":null}';
-if($type=="comment"){baoloi();}
+if($type=="comment"){baoloi();continue;}
 
 if(in_array($mid, $mid_list)){
-	echo "Đã làm Job này rồi.\r";sleep(1);baoloi();return;
+	echo "Đã làm Job này rồi.\r";sleep(1);baoloi();continue;
 }
 file_put_contents($data_file, "$mid|", FILE_APPEND);
  
-if($type=="like"){
-$likee=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-$clike=explode(',',explode('solike":',$likee)[1])[0];if($clike==0){exit;}
-echo"Mở đường dẫn...\r";
+if ($type == "like") {
+    // Kiểm tra số like hiện tại
+    $likee = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $clike = explode(',', explode('solike":', $likee)[1])[0];
 
-termux();
-for($delay;$delay<$mlen;$delay--){
-if($delay==0){break;}
-echo"Vui lòng thực hiện nhiệm vụ $type $delay giây \r";sleep(1);}mothai();
-$likee1=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-$clike1=explode(',',explode('solike":',$likee1)[1])[0];
-if($clike1>$clike){
-echo"Đang nhận tiền... \r";
-$nhantien=json_decode(plike($u4,$tsm,$danhan),true);$ketqua=$nhantien['status'];
-if($ketqua==200){
-	$poi=$nhantien['data']['prices'];$poii=$poi+$poiii;$tg=date("G:i:s", time());mothai();
-	echo"$re $stt | $tg |$y $type |  $vava  |$gr $poi |$poii \n";$sp=$stt+1;$stt=$sp;
-	}else{baoloi();continue;}
-	}else{baoloi();continue;}
+    // Nếu không có like, bỏ qua công việc này và tiếp tục vòng lặp
+    if ($clike == 0) {
+        echo "Không có like, bỏ qua công việc này...\n";
+        continue;  // Tiếp tục vòng lặp chính để tìm công việc mới
+    }
+
+    echo "Mở đường dẫn...\r";
+    termux();  // Mở link theo yêu cầu
+
+    // Tiến hành delay công việc
+    for ($delay; $delay < $mlen; $delay--) {
+        if ($delay == 0) {
+            break;
+        }
+        echo "Vui lòng thực hiện nhiệm vụ $type $delay giây \r";
+        sleep(1);
+    }
+
+    // Kiểm tra lại số like sau khi thực hiện nhiệm vụ
+    $likee1 = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $clike1 = explode(',', explode('solike":', $likee1)[1])[0];
+
+    // Nếu số like đã thay đổi, nhận tiền
+    if ($clike1 > $clike) {
+        echo "Đang nhận tiền... \r";
+        
+        // Gửi yêu cầu nhận tiền
+        $nhantien = json_decode(plike($u4, $tsm, $danhan), true);
+        $ketqua = $nhantien['status'];
+
+        // Kiểm tra kết quả trả về từ API
+        if ($ketqua == 200) {
+            // API trả về thành công
+            $poi = $nhantien['data']['prices'];
+            $poii = $poi + $poiii;  // Cập nhật tổng số tiền đã nhận
+            $tg = date("G:i:s", time());
+            mothai();
+            echo "$re $stt | $tg |$y $type |  $vava  |$gr $poi |$poii \n";
+            $sp = $stt + 1;
+            $stt = $sp;
+        } else {
+            // Nếu API trả về không thành công
+            echo "Lỗi khi nhận tiền, mã lỗi: " . $ketqua . "\n";
+            baoloi();  // Gọi hàm baoloi để bỏ qua công việc
+            continue;  // Tiếp tục vòng lặp
+        }
+    } else {
+        // Nếu số like không thay đổi (không thực hiện nhiệm vụ thành công)
+        echo "Số like không thay đổi, bỏ qua công việc này.\n";
+        baoloi();  // Gọi hàm baoloi để bỏ qua công việc
+        continue;  // Tiếp tục vòng lặp
+    }
 }
+
 if($type=="follow"){
 	$flo=file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
 	$cflo=explode(',',explode('following":',$flo)[1])[0];
