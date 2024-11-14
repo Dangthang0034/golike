@@ -41,35 +41,31 @@ function checkCookieStatus($cookie) {
 
 // Hàm kiểm tra số dư
 function checkBalance($cookie) {
-    $url = 'https://meteex.biz/golden_ticket';  // URL của trang cần kiểm tra số dư
+    // Kiểm tra cookie hợp lệ
+    if (!checkCookieStatus($cookie)) {
+        return false; // Cookie không hợp lệ
+    }
 
-    // Khởi tạo cURL để kiểm tra số dư
+    // Nếu cookie hợp lệ, kiểm tra số dư
+    $url = 'https://meteex.biz/golden_ticket';
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_COOKIE, $cookie);  // Dùng cookie
+    curl_setopt($ch, CURLOPT_COOKIE, $cookie);
     curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
-
-    // Gửi yêu cầu và nhận nội dung phản hồi
     $response = curl_exec($ch);
-    if (curl_errno($ch)) {
-        echo 'Error:' . curl_error($ch);
-        curl_close($ch);
-        return false;  // Nếu có lỗi, trả về false
-    }
-
     curl_close($ch);
 
-    // Tìm số dư trong phản hồi của trang (dùng chuỗi để tìm số dư)
-    if (preg_match('/<span id="new-money-ballans">.*?<span class="new-up-osn" translate="no">(.*?)<\/span>.*?<span style="margin-left: 5px;font-size: 14px;">/', $response, $matches)) {
-        return $matches[1];  // Trả về số dư tìm được
+    // Tìm số dư trong phản hồi
+    preg_match('/<span id="new-money-ballans">.*?<span class="new-up-osn" translate="no">([\d\.]+)<\/span>/', $response, $matches);
+    if (!empty($matches[1])) {
+        return $matches[1]; // Số dư
     }
-
-    return false;  // Nếu không tìm thấy số dư, trả về false
+    return false;
 }
 
 // Hàm lấy dữ liệu nhiệm vụ và bấm nút
-function getTaskData($cookie) {
+function getTaskDataAndClick($cookie) {
     // Địa chỉ trang nhiệm vụ
     $url = 'https://meteex.biz/work-serf?ctrll=ee332be535014f4f86c7ef8594d46aaeee332be535014f4f86c7ef8594d46aae';
     
@@ -82,33 +78,36 @@ function getTaskData($cookie) {
     $response = curl_exec($ch);
     curl_close($ch);
 
-    // Tìm kiếm các nhiệm vụ
-    preg_match_all('/<div id="serf-link-(\d+)"/', $response, $matches);
+    // Tìm kiếm các nhiệm vụ (dùng regex để tìm phần tử có id bắt đầu bằng "serf-link-")
+    preg_match('/<div id="serf-link-(\d+)"/', $response, $matches);
     
     if (!empty($matches[1])) {
-        echo "Tìm thấy các nhiệm vụ: \n";
-        foreach ($matches[1] as $taskId) {
-            echo "Nhiệm vụ ID: $taskId\n";
-            // Mô phỏng bấm nút
-            $buttonSelector = "#start-serf-$taskId > div";
-            echo "Tìm thấy phần tử nút bấm: $buttonSelector\n";
+        $taskId = $matches[1];  // ID của nhiệm vụ đầu tiên
 
-            // Xây dựng URL thực hiện bấm (thực tế chỉ cần URL trong `title` để gửi yêu cầu)
-            $taskUrl = "https://rassomaha2.aqulas.me";  // URL trong `title` của thẻ <div>
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $taskUrl);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_COOKIE, $cookie);
-            curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
-            $response = curl_exec($ch);
-            curl_close($ch);
+        echo "Tìm thấy nhiệm vụ đầu tiên với ID: $taskId\n";
 
-            // Kiểm tra xem nút "Bắt đầu xem" có xuất hiện không
-            if (strpos($response, 'start-yes-serf') !== false) {
-                echo "Nút đã được bấm và phần tử đã xuất hiện.\n";
-            } else {
-                echo "Không tìm thấy phần tử sau khi bấm nút.\n";
-            }
+        // Mô phỏng bấm nút
+        $buttonSelector = "#start-serf-$taskId > div";
+        echo "Tìm thấy phần tử nút bấm: $buttonSelector\n";
+
+        // URL để bấm nút (dùng title trong <div> để mở trang nhiệm vụ)
+        preg_match('/title="(.*?)"/', $response, $urlMatches);
+        $taskUrl = $urlMatches[1];
+
+        // Mở link để mô phỏng hành động "bấm" nút
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $taskUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_COOKIE, $cookie);
+        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0");
+        $response = curl_exec($ch);
+        curl_close($ch);
+
+        // Kiểm tra xem có phần tử "Bắt đầu xem" xuất hiện không
+        if (strpos($response, 'start-yes-serf') !== false) {
+            echo "Nút đã được bấm và phần tử 'Bắt đầu xem' đã xuất hiện.\n";
+        } else {
+            echo "Không tìm thấy phần tử 'Bắt đầu xem' sau khi bấm nút.\n";
         }
     } else {
         echo "Không tìm thấy nhiệm vụ nào.\n";
@@ -130,18 +129,16 @@ function main($cookieFile) {
         }
     }
 
-    // Kiểm tra số dư và cập nhật cookie nếu hợp lệ
+    // Kiểm tra số dư và chỉ hiển thị nếu hợp lệ
     $balance = checkBalance($cookie);
     if ($balance) {
         echo "Số dư hiện tại: $balance\n";  // In ra số dư
-        file_put_contents($cookieFile, $cookie);  // Ghi đè cookie vào file
-        echo "Đã cập nhật cookie trong tệp $cookieFile.\n";
     } else {
         echo "Không thể lấy số dư. Thử lại sau.\n";
     }
 
     // Truy cập và xử lý nhiệm vụ
-    getTaskData($cookie);
+    getTaskDataAndClick($cookie);
 }
 
 // Bắt đầu chương trình
