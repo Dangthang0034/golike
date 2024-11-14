@@ -3,7 +3,7 @@
 // Đường dẫn đến tệp chứa cookie
 $cookieFile = 'metex.txt';
 
-// Hàm yêu cầu nhập cookie từ màn hình
+// Hàm yêu cầu nhập cookie từ màn hình và lưu vào tệp
 function getCookieInput($cookieFile) {
     // Kiểm tra nếu tệp cookie tồn tại
     if (file_exists($cookieFile)) {
@@ -76,33 +76,32 @@ function checkBalance($cookie) {
 
 // Hàm yêu cầu và kiểm tra cookie
 function requestCookie($cookieFile) {
-    $cookie = getCookieInput($cookieFile);  // Lấy cookie từ tệp hoặc yêu cầu nhập
+    // Vòng lặp để kiểm tra cookie
+    while (true) {
+        // Yêu cầu cookie nếu chưa có
+        $cookie = getCookieInput($cookieFile);  // Lấy cookie từ tệp hoặc yêu cầu nhập
 
-    echo "Đang kiểm tra số dư với cookie...\n";
-    $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
-
-    if ($balance) {
-        echo "Số dư hiện tại: $balance\n";  // In ra số dư
-    } else {
-        echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
-        // Yêu cầu nhập lại cookie
-        $cookie = getCookieInput($cookieFile);  // Nhập lại cookie từ màn hình
-
-        echo "Đang kiểm tra số dư với cookie mới...\n";
-        $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie mới
+        echo "Đang kiểm tra số dư với cookie...\n";
+        $balance = checkBalance($cookie);  // Kiểm tra số dư với cookie hiện tại
 
         if ($balance) {
-            echo "Số dư hiện tại: $balance\n";  // In ra số dư nếu thành công
+            echo "Số dư hiện tại: $balance\n";  // In ra số dư
+            file_put_contents($cookieFile, $cookie);  // Ghi đè cookie vào tệp
+            echo "Đã cập nhật cookie trong tệp $cookieFile.\n";
+            return true;  // Trả về true khi số dư hợp lệ
         } else {
-            echo "Cookie vẫn không hợp lệ sau khi nhập lại. Chương trình kết thúc.\n";
-            exit(1);  // Kết thúc nếu cookie vẫn không hợp lệ
+            // Nếu cookie không hợp lệ, yêu cầu nhập lại cookie
+            echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
         }
     }
 }
 
 // Chạy mã chính
 function main() {
-    requestCookie('metex.txt');  // Lấy cookie từ tệp hoặc yêu cầu nhập và kiểm tra số dư
+    // Thực hiện yêu cầu cookie và kiểm tra số dư
+    while (!requestCookie('metex.txt')) {
+        echo "Vui lòng thử lại.\n";
+    }
 }
 
 main();
