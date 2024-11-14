@@ -51,7 +51,6 @@ function checkCookieValidity($cookie) {
     curl_close($ch);
 
     // Kiểm tra trạng thái phản hồi của trang web
-    // Ví dụ: kiểm tra xem trang có chứa lỗi về cookie không
     if (strpos($response, 'cookie expired') !== false || strpos($response, 'session expired') !== false) {
         return false;  // Nếu cookie hết hạn, trả về false
     }
@@ -138,7 +137,7 @@ function getTaskData($cookie) {
     $taskId = $matches[1][0];
     echo "Đã tìm thấy nhiệm vụ với ID: $taskId\n";
 
-    // Tìm phần tử nút bắt đầu của nhiệm vụ
+    // Tạo selector của nút bấm
     $startButtonSelector = "#start-serf-$taskId > div";
     echo "Tìm phần tử nút bấm: $startButtonSelector\n";
 
