@@ -62,34 +62,27 @@ function checkCookieValidity($cookie) {
 
 // Hàm yêu cầu và kiểm tra cookie
 function requestCookie($cookieFile) {
-    // Vòng lặp để yêu cầu người dùng nhập lại cookie nếu cookie không hợp lệ
-    while (true) {
-        // Lấy cookie từ tệp hoặc yêu cầu nhập nếu chưa có
-        $cookie = getCookieInput($cookieFile);
-        if (!$cookie) {
-            // Nếu chưa có cookie hoặc cookie không hợp lệ, yêu cầu nhập mới
-            $cookie = promptForCookie($cookieFile);
-        }
+    // Lấy cookie từ tệp hoặc yêu cầu nhập nếu chưa có
+    $cookie = getCookieInput($cookieFile);
 
-        echo "Đang kiểm tra tính hợp lệ của cookie...\n";
-        $isCookieValid = checkCookieValidity($cookie);  // Kiểm tra tính hợp lệ của cookie
-
-        if ($isCookieValid) {
-            echo "Cookie hợp lệ. Số dư có thể được kiểm tra.\n";
-            return true;  // Cookie hợp lệ, thoát vòng lặp
-        } else {
-            // Nếu cookie không hợp lệ, yêu cầu người dùng nhập lại
-            echo "Cookie không hợp lệ hoặc đã hết hạn. Vui lòng nhập lại cookie.\n";
-        }
+    // Nếu đã có cookie cũ, kiểm tra tính hợp lệ của nó
+    if ($cookie && checkCookieValidity($cookie)) {
+        echo "Cookie hợp lệ. Tiến hành kiểm tra số dư.\n";
+        return $cookie;  // Trả về cookie hợp lệ
     }
+
+    // Nếu cookie không hợp lệ hoặc chưa có, yêu cầu nhập lại
+    echo "Cookie không hợp lệ hoặc chưa có. Vui lòng nhập lại cookie.\n";
+    $cookie = promptForCookie($cookieFile);  // Yêu cầu người dùng nhập cookie mới
+    return $cookie;
 }
 
-// Chạy mã chính
+// Hàm chính
 function main() {
-    // Thực hiện yêu cầu cookie và kiểm tra tính hợp lệ
-    while (!requestCookie('metex.txt')) {
-        echo "Vui lòng thử lại.\n";
-    }
+    // Kiểm tra cookie và yêu cầu nhập nếu không hợp lệ
+    $cookie = requestCookie('metex.txt');
+    // Số dư có thể được kiểm tra sau khi cookie hợp lệ
+    echo "Cookie hợp lệ: $cookie\n";
 }
 
 main();
