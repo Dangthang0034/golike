@@ -14,6 +14,12 @@ function getCookieInput($cookieFile) {
         // Nếu không có cookie trong file, yêu cầu nhập từ người dùng
         echo "Nhập cookie (đảm bảo rằng mỗi cookie cách nhau bằng dấu ';'):\n";
         $cookie = trim(fgets(STDIN));
+
+        // Nếu file chưa có, tạo file mới và lưu cookie
+        if (!file_exists($cookieFile)) {
+            file_put_contents($cookieFile, $cookie);  // Tạo file và ghi cookie vào
+            echo "File '$cookieFile' đã được tạo và cookie đã được lưu.\n";
+        }
     }
 
     // Kiểm tra tính hợp lệ của cookie (bạn có thể thay đổi hàm checkCookieStatus nếu cần)
