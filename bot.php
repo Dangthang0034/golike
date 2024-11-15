@@ -183,38 +183,35 @@ if ($type == "follow") {
 
     // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
     if ($cflo != $cfloo) {
-        echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
-        baoloi();  // Gọi hàm bỏ qua
-        continue;  // Tiếp tục vòng lặp chính
-    }else{
-    echo "Đang nhận tiền... \r";
-    $ll = 0;
-    while ($ll < $mlen) {
-        $ll++;
-        if ($ll > 2) {
-            baoloi();  // Nếu lỗi quá 2 lần, bỏ qua
-            break;
-        }
+        echo "Đang nhận tiền... \r";
+    	$ll = 0;
+    	while ($ll < $mlen) {
+        	$ll++;
+        	if ($ll > 2) {
+            	baoloi();  // Nếu lỗi quá 2 lần, bỏ qua
+            	break;
+        	}
+        	// Gửi yêu cầu nhận tiền
+        	$nhantien = json_decode(plike($u4, $tsm, $danhan), true);
+        	$ketqua = $nhantien['status'];
 
-        // Gửi yêu cầu nhận tiền
-        $nhantien = json_decode(plike($u4, $tsm, $danhan), true);
-        $ketqua = $nhantien['status'];
-
-        if ($ketqua == 200) {
-            // Nhận tiền thành công
-            $poi = $nhantien['data']['prices'];
-            $poii = $poi + $poiii;  // Cập nhật tổng tiền đã nhận
-            $tg = date("G:i:s", time());
-            mothai();  // Giấu thông báo
-
+        	if ($ketqua == 200) {
+            	// Nhận tiền thành công
+            	$poi = $nhantien['data']['prices'];
+            	$poii = $poi + $poiii;  // Cập nhật tổng tiền đã nhận
+            	$tg = date("G:i:s", time());
+            	mothai();  // Giấu thông báo
             // In kết quả nhận tiền
-            echo "$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";
-            $sp = $stt + 1;
-            $stt = $sp;
-            continue;  // Tiếp tục với công việc tiếp theo
+	            echo "$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";
+	            $sp = $stt + 1;
+        	    $stt = $sp;
+            	continue;  // Tiếp tục với công việc tiếp theo
         }
     }
-}
+}else{echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
+        baoloi();  // Gọi hàm bỏ qua
+        continue;  // Tiếp tục vòng lặp chính
+    }
 }
 	    for($k = 3;$k>0;$k--){
 		echo "delay tìm Job $k \r";sleep(1);}
