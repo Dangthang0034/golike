@@ -104,8 +104,17 @@ if ($type == "like") {
     // Kiểm tra số like hiện tại
     $likee = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
     $clike = explode(',', explode('solike":', $likee)[1])[0];
+
+    // Nếu không có like, bỏ qua công việc này và tiếp tục vòng lặp
+    if ($clike == 0) {
+        echo "Không có like, bỏ qua công việc này...\n";
+        continue;  // Tiếp tục vòng lặp chính để tìm công việc mới
+    }
+
     echo "Mở đường dẫn...\r";
-    termux();  // Mở đường dẫn
+    termux();  // Mở link theo yêu cầu
+
+    // Tiến hành delay công việc
     for ($delay; $delay < $mlen; $delay--) {
         if ($delay == 0) {
             break;
@@ -113,25 +122,127 @@ if ($type == "like") {
         echo "Vui lòng thực hiện nhiệm vụ $type $delay giây \r";
         sleep(1);
     }
-    mothai();
-    // Kiểm tra số like sau khi thực hiện nhiệm vụ
-    $likee2 = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-    $clike2 = explode(',', explode('solike":', $likee2)[1])[0];
-    if ($clike != $clike2) {
-        echo "Số lượng like đã thay đổi, thực hiện nhiệm vụ...\n";
+
+    // Kiểm tra lại số like sau khi thực hiện nhiệm vụ
+    $likee1 = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $clike1 = explode(',', explode('solike":', $likee1)[1])[0];
+
+    // Nếu số like đã thay đổi, nhận tiền
+    if ($clike1 > $clike) {
+        echo "Đang nhận tiền... \r";
+        
+        // Gửi yêu cầu nhận tiền
+        $nhantien = json_decode(plike($u4, $tsm, $danhan), true);
+        $ketqua = $nhantien['status'];
+
+        // Kiểm tra kết quả trả về từ API
+        if ($ketqua == 200) {
+            // API trả về thành công
+            $poi = $nhantien['data']['prices'];
+            $poii = $poi + $poiii;  // Cập nhật tổng số tiền đã nhận
+            $tg = date("G:i:s", time());
+            mothai();
+            echo "$re $stt | $tg |$y $type |  $vava  |$gr $poi |$poii \n";
+            $sp = $stt + 1;
+            $stt = $sp;
+        } else {
+            // Nếu API trả về không thành công
+            echo "Lỗi khi nhận tiền, mã lỗi: " . $ketqua . "\n";
+            baoloi();  // Gọi hàm baoloi để bỏ qua công việc
+            continue;  // Tiếp tục vòng lặp
+        }
     } else {
-        echo "Số lượng like không thay đổi, bỏ qua nhiệm vụ.\n";
-        baoloi();  // Bỏ qua nhiệm vụ
-        continue;
+        // Nếu số like không thay đổi (không thực hiện nhiệm vụ thành công)
+        echo "Số like không thay đổi, bỏ qua công việc này.\n";
+        baoloi();  // Gọi hàm baoloi để bỏ qua công việc
+        continue;  // Tiếp tục vòng lặp
     }
 }
 
-$poi = $job['data']['prices'];
-$poiii = $xuu;
-$poii = $poi + $poiii;  // Cập nhật tổng số tiền đã nhận
-$tg = date("G:i:s", time());
-mothai();
-echo "$re $stt | $tg |$y $type |  $vava  |$gr $poi |$poii \n";
-$stt++;
+if ($type == "follow") {
+    // Lấy số lượng người đang follow trước khi thực hiện nhiệm vụ
+    $flo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $cflo = explode(',', explode('following":', $flo)[1])[0];
+
+    echo "Mở đường dẫn...\r";
+    termux();  // Mở đường dẫn
+
+    // Đợi trong khoảng thời gian delay
+    for ($delay; $delay < $mlen; $delay--) {
+        if ($delay == 0) {
+            break;
+        }
+        echo "Vui lòng thực hiện nhiệm vụ $type $delay giây \r";
+        sleep(1);
+    }
+
+    mothai();  // Giấu thông báo đang đợi
+    // Kiểm tra số lượng người đang follow sau khi thực hiện nhiệm vụ
+    $floo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
+    $cfloo = explode(',', explode('following":', $floo)[1])[0];
+
+    // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
+    if ($cflo != $cfloo) {
+        echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
+        baoloi();  // Gọi hàm bỏ qua
+        continue;  // Tiếp tục vòng lặp chính
+    }else{
+    echo "Đang nhận tiền... \r";
+    $ll = 0;
+    while ($ll < $mlen) {
+        $ll++;
+        if ($ll > 2) {
+            baoloi();  // Nếu lỗi quá 2 lần, bỏ qua
+            break;
+        }
+
+        // Gửi yêu cầu nhận tiền
+        $nhantien = json_decode(plike($u4, $tsm, $danhan), true);
+        $ketqua = $nhantien['status'];
+
+        if ($ketqua == 200) {
+            // Nhận tiền thành công
+            $poi = $nhantien['data']['prices'];
+            $poii = $poi + $poiii;  // Cập nhật tổng tiền đã nhận
+            $tg = date("G:i:s", time());
+            mothai();  // Giấu thông báo
+
+            // In kết quả nhận tiền
+            echo "$re $stt | $tg |$y $type | $vava |$gr $poi | $poii \n";
+            $sp = $stt + 1;
+            $stt = $sp;
+            continue;  // Tiếp tục với công việc tiếp theo
+        }
+    }
 }
-?>
+}
+	    for($k = 3;$k>0;$k--){
+		echo "delay tìm Job $k \r";sleep(1);}
+$poiii=$poii;
+
+}
+function glike($host,$tsm){
+	$mr = curl_init();
+	curl_setopt_array($mr, array(
+	CURLOPT_PORT =>"443",
+	CURLOPT_URL => "$host",
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_SSL_VERIFYPEER => false,
+	CURLOPT_TIMEOUT => 30,
+	CURLOPT_CUSTOMREQUEST => "GET",
+	CURLOPT_HTTPHEADER => $tsm));
+	$mr2 = curl_exec($mr); curl_close($mr);
+	return $mr2;}
+function plike($host,$tsm,$data){
+	$mr = curl_init();
+	curl_setopt_array($mr, array(
+	CURLOPT_PORT =>"443",
+	CURLOPT_URL => "$host",
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_SSL_VERIFYPEER => false,
+	CURLOPT_TIMEOUT => 30,
+	CURLOPT_CUSTOMREQUEST => "POST",
+	CURLOPT_POSTFIELDS => $data,
+	CURLOPT_HTTPHEADER => $tsm));
+	$mr2 = curl_exec($mr); curl_close($mr);
+	return $mr2;}
