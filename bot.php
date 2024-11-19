@@ -207,10 +207,11 @@ if ($type == "follow") {
             	continue;  // Tiếp tục với công việc tiếp theo
         }
     }
-}else{echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
+}
+    '''else{echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
         baoloi();  // Gọi hàm bỏ qua
         continue;  // Tiếp tục vòng lặp chính
-    }
+    }'''
 }
 	    for($k = 3;$k>0;$k--){
 		echo "delay tìm Job $k \r";sleep(1);}
