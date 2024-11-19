@@ -102,8 +102,8 @@ file_put_contents($data_file, "$mid|", FILE_APPEND);
  
 if ($type == "like") {
     // Kiểm tra số like hiện tại
-    $likee = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-    $clike = explode(',', explode('solike":', $likee)[1])[0];
+    $like=file_get_contents("https://tiktok.com/@$vava");
+    $clike=explode(',',explode('diggCount":',$like1)[1])[0];
 
     // Nếu không có like, bỏ qua công việc này và tiếp tục vòng lặp
     if ($clike == 0) {
@@ -124,9 +124,8 @@ if ($type == "like") {
     }
 
     // Kiểm tra lại số like sau khi thực hiện nhiệm vụ
-    $likee1 = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-    $clike1 = explode(',', explode('solike":', $likee1)[1])[0];
-
+    $like1=file_get_contents("https://tiktok.com/@$vava");
+    $clike1=explode(',',explode('diggCount":',$like1)[1])[0];
     // Nếu số like đã thay đổi, nhận tiền
     if ($clike1 > $clike) {
         echo "Đang nhận tiền... \r";
@@ -161,8 +160,8 @@ if ($type == "like") {
 
 if ($type == "follow") {
     // Lấy số lượng người đang follow trước khi thực hiện nhiệm vụ
-    $flo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-    $cflo = explode(',', explode('following":', $flo)[1])[0];
+    $flo = file_get_contents("https://tiktok.com/@$vava");
+    $cflo = explode(',',explode('followingCount":',$flo1)[1])[0];sleep(1);
 
     echo "Mở đường dẫn...\r";
     termux();  // Mở đường dẫn
@@ -178,8 +177,8 @@ if ($type == "follow") {
 
     mothai();  // Giấu thông báo đang đợi
     // Kiểm tra số lượng người đang follow sau khi thực hiện nhiệm vụ
-    $floo = file_get_contents("https://dkcuti09.x10.mx/tiktok_api/check_tiktok.php?gt=$vava&type=user&");
-    $cfloo = explode(',', explode('following":', $floo)[1])[0];
+    $floo = file_get_contents("https://tiktok.com/@$vava");
+    $cfloo = explode(',',explode('followingCount":',$flo1)[1])[0];sleep(1);
 
     // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
     if ($cflo < $cfloo) {
