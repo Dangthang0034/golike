@@ -161,7 +161,7 @@ if ($type == "like") {
 if ($type == "follow") {
     // Lấy số lượng người đang follow trước khi thực hiện nhiệm vụ
     $flo = file_get_contents("https://tiktok.com/@$vava");
-    $cflo = explode(',',explode('followingCount":',$flo1)[1])[0];sleep(1);
+    $cflo = explode(',',explode('followingCount":',$flo)[1])[0];sleep(1);
 
     echo "Mở đường dẫn...\r";
     termux();  // Mở đường dẫn
@@ -178,7 +178,7 @@ if ($type == "follow") {
     mothai();  // Giấu thông báo đang đợi
     // Kiểm tra số lượng người đang follow sau khi thực hiện nhiệm vụ
     $floo = file_get_contents("https://tiktok.com/@$vava");
-    $cfloo = explode(',',explode('followingCount":',$flo1)[1])[0];sleep(1);
+    $cfloo = explode(',',explode('followingCount":',$floo)[1])[0];sleep(1);
 
     // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
     if ($cflo < $cfloo) {
@@ -207,11 +207,10 @@ if ($type == "follow") {
             	continue;  // Tiếp tục với công việc tiếp theo
         }
     }
-}
-    '''else{echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
+}else{echo "Số lượng người follow không thay đổi, bỏ qua nhiệm vụ.\n";
         baoloi();  // Gọi hàm bỏ qua
         continue;  // Tiếp tục vòng lặp chính
-    }'''
+    }
 }
 	    for($k = 3;$k>0;$k--){
 		echo "delay tìm Job $k \r";sleep(1);}
