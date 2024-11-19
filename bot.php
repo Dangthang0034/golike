@@ -182,7 +182,7 @@ if ($type == "follow") {
     $cfloo = explode(',', explode('following":', $floo)[1])[0];
 
     // Nếu số người đang follow không thay đổi, tức là chưa thực hiện được nhiệm vụ, bỏ qua
-    if ($cflo != $cfloo) {
+    if ($cflo < $cfloo) {
         echo "Đang nhận tiền... \r";
     	$ll = 0;
     	while ($ll < $mlen) {
